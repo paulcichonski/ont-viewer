@@ -6,7 +6,6 @@
 lib/
 classes/
 target/
-WebContent/
 .settings/
 
 # Package Files #
