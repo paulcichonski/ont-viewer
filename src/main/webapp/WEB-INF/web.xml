@@ -4,5 +4,17 @@
  <description>Test web application</description>
  <display-name>Test Web</display-name>
  
+ 
+ 
+  <servlet>
+    <display-name>OntologyViewerServlet</display-name>
+    <servlet-name>OntologyViewerServlet</servlet-name>
+    <servlet-class>org.cichonski.ontviewer.servlet.OntologyViewer</servlet-class>
+  </servlet>
+
+   <servlet-mapping>
+    <servlet-name>OntologyViewerServlet</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
     
 </web-app>
