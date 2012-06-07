@@ -25,13 +25,13 @@ final class Application {
     
     private static Application application;
     
-    public static void initializeApplication() throws ServletException {
+    public static void initializeApplication(String contextPath) throws ServletException {
         if (application != null) {
             // if servlets are being pooled then this logic will need to change, don't throw exception
             throw new ServletException("application is already initialized!");
         }
         try {
-        	 application = new Application(ViewBuilder.buildViews(getOntDir()));
+        	application = new Application(ViewBuilder.buildViews(getOntDir(), contextPath), contextPath); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);
         }
@@ -55,9 +55,11 @@ final class Application {
 
     // the map of all the views to display, keyed by the path
     private final Map<String, View> views;
+    private final String contextPath;
     
-    private Application(Map<String, View> views) {
+    private Application(Map<String, View> views, String contextPath) {
         this.views = views;
+        this.contextPath = contextPath;
     }
     
     public void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -66,7 +68,7 @@ final class Application {
             try {
                 PrintWriter out = response.getWriter();
                 if (views != null && !views.isEmpty()){
-                	out.println(ViewBuilder.buildViewIndex(Collections.unmodifiableMap(views))); //todo: add caching
+                	out.println(ViewBuilder.buildViewIndex(Collections.unmodifiableMap(views), contextPath)); //todo: add caching
                 } else {
                 	out.write("no views available");
                 }

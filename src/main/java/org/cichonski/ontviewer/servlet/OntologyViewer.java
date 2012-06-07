@@ -2,6 +2,7 @@ package org.cichonski.ontviewer.servlet;
 
 import java.io.IOException;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,10 +18,10 @@ public class OntologyViewer extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
     @Override
-    public void init() throws ServletException {
+    public void init(ServletConfig config) throws ServletException {
         // TODO Auto-generated method stub
         super.init();
-        Application.initializeApplication();
+        Application.initializeApplication(config.getServletContext().getContextPath());
     }
     
     @Override
