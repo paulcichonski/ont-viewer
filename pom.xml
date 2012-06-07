@@ -11,7 +11,16 @@
   
   <name>ont-viewer</name>
   
-
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+  </repositories>
   
   <dependencies>
     <dependency>
@@ -26,6 +35,11 @@
     	<artifactId>servlet-api</artifactId>
     	<version>2.5</version>
     	<scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.apache.velocity</groupId>
+    	<artifactId>velocity</artifactId>
+    	<version>1.7</version>
     </dependency>
   </dependencies>
   

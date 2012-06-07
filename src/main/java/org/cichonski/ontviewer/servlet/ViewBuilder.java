@@ -5,13 +5,21 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.velocity.app.Velocity;
+
 /**
- * Utility methods for building out Views.
+ * Utility methods for building out Views. Handle all dynamic Velocity genration.
  * @author paulcichonski
  *
  */
 public final class ViewBuilder {
 // eventually may want to use this to build out static views for caching to disk.
+	
+	
+	public static void init(){
+		Velocity.init();
+		// need error checking if this doesn't happen, maybe RuntimeConfiguration.isInitialized() ?
+	}
 	
 	/**
 	 * Helper method to build out views for a set of ontologies found in the specified directory.
@@ -24,6 +32,10 @@ public final class ViewBuilder {
 		final Map<String, View> views = new HashMap<String, View>();
         if (ontologyDirectory != null & ontologyDirectory.isDirectory()){
             for (File ont : ontologyDirectory.listFiles()){
+            	
+            	// can call Velocity.evaluate() to dynamically build out a populated template.
+            	
+            	
                 final View view = new View(ont);
                 views.put(view.getPath(), view);
             }
@@ -53,4 +65,7 @@ public final class ViewBuilder {
         builder.append("</html>");
         return builder.toString();
 	}
+	
+
+
 }
