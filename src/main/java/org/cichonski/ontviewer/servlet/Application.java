@@ -1,10 +1,11 @@
 package org.cichonski.ontviewer.servlet;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,15 +30,12 @@ final class Application {
             // if servlets are being pooled then this logic will need to change, don't throw exception
             throw new ServletException("application is already initialized!");
         }
-        final Map<String, View> views = new HashMap<String, View>();
-        final File ontDir = getOntDir();
-        if (ontDir != null & ontDir.isDirectory()){
-            for (File ont : ontDir.listFiles()){
-                final View view = new View(ont);
-                views.put(view.getPath(), view);
-            }
+        try {
+        	 application = new Application(ViewBuilder.buildViews(getOntDir()));
+        } catch (FileNotFoundException e){
+        	throw new ServletException(e);
         }
-        application = new Application(views);
+       
     }
     
     public static Application getInstance() {
@@ -67,7 +65,11 @@ final class Application {
         if (path == null || path.isEmpty() || path.equals("/")){
             try {
                 PrintWriter out = response.getWriter();
-                out.println(buildIndex()); //todo: add caching
+                if (views != null && !views.isEmpty()){
+                	out.println(ViewBuilder.buildViewIndex(Collections.unmodifiableMap(views))); //todo: add caching
+                } else {
+                	out.write("no views available");
+                }
             }catch (IOException e){
                 log.log(Level.WARNING, "error writing index page to response");
                 throw e; // let higher level servlet code deal with it
@@ -89,21 +91,7 @@ final class Application {
             }
         }
     }
-    
-    private String buildIndex(){
-        //TODO: replace all view gen code with velocity templates.
-        final StringBuilder builder = new StringBuilder();
-        builder.append("<html><head></head><title>Ontology Index</title><body>");
-        for (Map.Entry<String, View> entry : views.entrySet()){
-            final String path = entry.getKey();
-            final View view = entry.getValue();
-            builder.append("<br/>");
-            builder.append(view.getCleanName()).append(" - ");
-            builder.append("<a href=\"").append(path).append("\">").append(view.getDescription()).append("</a>");
-        }
-        builder.append("</html>");
-        return builder.toString();
-    }
+
 
 
 }
