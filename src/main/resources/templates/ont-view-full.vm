@@ -1,0 +1,39 @@
+## Velocity template for generating a schema.org-like view of an ontology.
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- ======================================== -->
+<!-- =     GENERATED FILE! DO NOT EDIT!     = -->
+<!-- ======================================== -->
+<!-- page style is modeled off of the http://schema.org/docs/full.html taxonomy view -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>Full Vocabulary View</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="robots" content="index, follow" />
+	<link rel="stylesheet" type="text/css" href="css/default.css" media="all"/>
+</head>
+<body>
+
+	<table class=h>
+		<tr>
+			<td class="tc" colspan=4><a href="../DataType">DataType</a></td>
+		</tr>
+
+    	<tr>
+          <td class="space"></td>
+          <td class="bar"></td>
+          <td class="space"></td>
+          <td>
+    		<table class=h>
+    			<tr>
+    				<td class="tc" colspan=4><a href="../Boolean">Boolean</a></td>
+    			</tr>
+    		</table>
+    	  </td>
+    	</tr>
+	</table>
+	
+</body>
+</html>

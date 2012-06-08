@@ -35,6 +35,11 @@ public final class ViewBuilder {
             	
             	// can call Velocity.evaluate() to dynamically build out a populated template.
             	
+                //what i need from the owl:
+                // 1) list of all classes and their descriptions
+                // 2) classes should form a tree (class...subclass...subclass)
+                // 3) properties associated with each class
+                // so...really need one map that contains every class (for quick access), and one data structure that shows the tree
             	
                 final View view = new View(ont);
                 views.put(view.getPath(), view);
