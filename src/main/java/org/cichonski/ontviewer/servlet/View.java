@@ -13,16 +13,16 @@ final class View {
     private final String path;
     private final String cleanName;
     
-    public View(File ont) {
-        //TODO: implement
-        String fileName = ont.getName();
-        this.view = fileName + " the view!";
-        this.description = fileName + " the descrition!";
-        this.cleanName = fileName; // just use file name
+
+    
+    
+    public View(String view, String description, String fileName, String cleanName) {
+        this.view = view;
+        this.description = description;
         this.path = genPath(fileName);
+        this.cleanName = cleanName;
     }
-    
-    
+
     /**
      * The actual view to provide as an HTTP response.
      * @return
@@ -58,7 +58,7 @@ final class View {
     
     private String genPath(String fileName){
         int index = fileName.lastIndexOf("."); //assuming there is not multiple file extensions (i.e., .owl.bak)
-        return fileName.substring(0, index);
+        return "/" + fileName.substring(0, index);
     }
 
 }

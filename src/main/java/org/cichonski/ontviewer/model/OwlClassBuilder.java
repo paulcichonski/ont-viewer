@@ -24,7 +24,7 @@ public class OwlClassBuilder {
     /**
      * 
      * @return
-     * @throws IllegalStateException if uri and label are null/empty
+     * @throws IllegalStateException if uri is null
      */
     public OwlClass build(){
         inspect();
@@ -36,7 +36,7 @@ public class OwlClassBuilder {
             throw new IllegalStateException("uri null");
         }
         if (label == null || label.isEmpty()){
-            throw new IllegalStateException("label null");
+            label = uri.toString();
         }
         if (subClasses == null){
             subClasses = new HashSet<OwlClass>();
