@@ -43,8 +43,10 @@ public class OwlSaxHandler extends DefaultHandler {
     // ***************************
     
     private final Map<URI, OwlClassBuilder> classBuilders = new HashMap<URI, OwlClassBuilder>();    
+    private final Map<URI, URI> subClassMap = new HashMap<URI, URI>(); // key=subclass URI, value = superclass URI.
     private final Set<Property> objectProperties = new HashSet<Property>();
     private final Set<Property> dataTypeProperties = new HashSet<Property>();
+    
     
 
     private String xmlBase;
@@ -80,6 +82,9 @@ public class OwlSaxHandler extends DefaultHandler {
             currentClasses.push(1);
             if (currentClasses.size() == 1){
                 startOwlClass(attributes);
+            } else {
+            	//assume subclasses only nest 1 deep
+            	parseSubClass(attributes);
             }
         } else if (isUnknownElementInOwlClass(uri, localName, qName)){ 
 				// in an element somewhere (n-depth) under owl:Class that we don't know about...but it could have labels and comments...need to ignore them
@@ -137,7 +142,8 @@ public class OwlSaxHandler extends DefaultHandler {
          * 1. set up all subClass relationships
          * 2. build all builders and add to both tree and cache
          */
-        // need to add properties to their classes
+
+    	
     	for (Property p : objectProperties){
     		populateProperties(p, PropertyType.OBJECT);
     	}
@@ -162,6 +168,18 @@ public class OwlSaxHandler extends DefaultHandler {
         builder.setUri(uri);
         currentClassBuilder = builder;
         classBuilders.put(uri, builder);
+    }
+    
+    private void parseSubClass(Attributes attributes){
+    	// **** !!!! Important: This assumes that a class is only a subClass of one other class !!! ****
+    	// **** !!!! While not valid according to the spec, we shouldn't be seeing any ontologies that break this rule !!!! ****
+    	URI uri = resolveFullUriIdentifier(attributes);
+		if (subClassMap.containsKey(uri)) {
+			throw new RuntimeException(
+					currentClassBuilder.getUri().toString()
+							+ " seems to declare two subclassOf relationships. This is not currently supported");
+		}
+    	subClassMap.put(currentClassBuilder.getUri(), uri); // the class being built is the actual subclass
     }
     
     private void populateProperties(Property p, PropertyType type){

@@ -42,6 +42,14 @@ public class OwlClassBuilder {
         }
     }
 
+    /**
+     * Convenience method for inspecting the URI being built.
+     * @return
+     */
+    public URI getUri() {
+		return uri;
+	}
+    
     public OwlClassBuilder setUri(URI uri) {
         this.uri = uri;
         return this;
