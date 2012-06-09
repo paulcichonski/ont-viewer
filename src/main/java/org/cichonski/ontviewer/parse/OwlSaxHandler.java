@@ -139,7 +139,7 @@ public class OwlSaxHandler extends DefaultHandler {
     @Override
     public void endDocument() throws SAXException {
         /* TODO:
-         * 1. set up all subClass relationships
+         * 1. subClass mappings are in the subClasses Map, need to assemble into the build set
          * 2. build all builders and add to both tree and cache
          */
 
