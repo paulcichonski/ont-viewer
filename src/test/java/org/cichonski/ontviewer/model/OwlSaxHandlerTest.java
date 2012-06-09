@@ -80,20 +80,20 @@ public class OwlSaxHandlerTest extends TestCase {
     	InputStream ont = null;
     	try {
         	ont = Thread.currentThread().getContextClassLoader().getResourceAsStream("ontologies/subset_indicators-vocabulary.owl");
-            OwlSaxHandler handler = new OwlSaxHandler();
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final OwlSaxHandler handler = new OwlSaxHandler();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setFeature("http://xml.org/sax/features/namespaces", true);
             factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-            SAXParser parser = factory.newSAXParser();
+            final SAXParser parser = factory.newSAXParser();
             parser.parse(ont, handler);
             
-            Map<URI, OwlClass> classCache = handler.getClassCache();
+            final Map<URI, OwlClass> classCache = handler.getClassCache();
             
             assertEquals(classCache.size(), 6);
             // test all classess
             for (Map.Entry<URI, OwlClass> entry : classCache.entrySet()){
-            	OwlClass owlClass = entry.getValue();
-            	OwlClass expectedClass = expectedClasses.get(entry.getKey().toString());
+            	final OwlClass owlClass = entry.getValue();
+            	final OwlClass expectedClass = expectedClasses.get(entry.getKey().toString());
             	testClasses(owlClass, expectedClass);
             }
             
@@ -124,10 +124,10 @@ public class OwlSaxHandlerTest extends TestCase {
     	
     	assertEquals(owlClass.getSubClasses().size(), expectedClass.getSubClasses().size());
     	// may test a class more than once, but that is fine
-    	Set<OwlClass> subClasses = new TreeSet<OwlClass>(owlClass.getSubClasses());
-    	Iterator<OwlClass> subClassIter = subClasses.iterator();
-    	Set<OwlClass> expectedSubClasses = new TreeSet<OwlClass>(expectedClass.getSubClasses());
-    	Iterator<OwlClass> expectedSubClassIter = expectedSubClasses.iterator();
+    	final Set<OwlClass> subClasses = new TreeSet<OwlClass>(owlClass.getSubClasses()); // ensure correct order
+    	final Iterator<OwlClass> subClassIter = subClasses.iterator();
+    	final Set<OwlClass> expectedSubClasses = new TreeSet<OwlClass>(expectedClass.getSubClasses());
+    	final Iterator<OwlClass> expectedSubClassIter = expectedSubClasses.iterator();
     	while (expectedSubClassIter.hasNext()) {
     		// already ensured they are the same size, 
     		testClasses(subClassIter.next(), expectedSubClassIter.next());
@@ -137,7 +137,37 @@ public class OwlSaxHandlerTest extends TestCase {
     }
     
     private void testPredicates(Set<Property> preds, Set<Property> expectedPreds){
-    	
+    	assertEquals(preds.size(), expectedPreds.size());
+    	//ensure correct order
+    	preds = new TreeSet<Property>(preds);
+    	final Iterator<Property> predsIter = preds.iterator();
+    	expectedPreds = new TreeSet<Property>(expectedPreds);
+    	final Iterator<Property> expectedPredsIter = expectedPreds.iterator();
+    	while (predsIter.hasNext()){
+    		Property pred = predsIter.next();
+    		Property expectedPred = expectedPredsIter.next();
+    		assertEquals(pred, expectedPred);
+    		assertEquals(pred.getLabel(), expectedPred.getLabel());
+    		assertEquals(pred.getURI(), expectedPred.getURI());
+    		assertEquals(pred.getDomains().size(), expectedPred.getDomains().size());;
+    		testURIs(pred.getDomains(), expectedPred.getDomains());
+    		assertEquals(pred.getRanges().size(), expectedPred.getRanges().size());
+    		testURIs(pred.getRanges(), expectedPred.getRanges());
+    	}
+    }
+    
+    private void testURIs(Set<URI> uris, Set<URI> expectedUris){
+    	assertEquals(uris.size(), expectedUris.size());
+    	//ensure correct order
+    	uris = new TreeSet<URI>(uris);
+    	final Iterator<URI> urisIter = uris.iterator();
+    	expectedUris = new TreeSet<URI>(expectedUris);
+    	final Iterator<URI> expectedUrisIter = expectedUris.iterator();
+    	while (urisIter.hasNext()){
+    		URI uri = urisIter.next();
+    		URI expectedUri = expectedUrisIter.next();
+    		assertEquals(uri, expectedUri);
+    	}
     }
     
 }
