@@ -11,6 +11,7 @@ import java.util.Set;
 public interface Property {
 
 	String getLabel();
+	String getDescription();
 	URI getURI();
 	Set<URI> getDomains();
 	Set<URI> getRanges(); // assuming dataType ranges are still encoded by URIs of XSD types

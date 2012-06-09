@@ -3,6 +3,9 @@ package org.cichonski.ontviewer.model;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,32 +31,59 @@ public class OwlSaxHandlerTest extends TestCase {
 	private static final String INTERNAL_INDICATOR = "http://foo.org/vocabulary/indicators#InternalIndicator";
 	private static final String EXTERNAL_INDICATOR = "http://foo.org/vocabulary/indicators#ExternalIndicator";
 	private static final String INDICATOR = "http://foo.org/vocabulary/indicators#Indicator";
-
+	// predicate URIs
+	private static final String CALLS_BACK_TO = "http://foo.org/vocabulary/indicators#callsbackTo";
+	private static final String DROPS_FILE = "http://foo.org/vocabulary/indicators#dropsFile";
+	private static final String SERVES_FILE = "http://foo.org/vocabulary/indicators#servesFile";
+	private static final String USES = "http://foo.org/vocabulary/indicators#uses";
+	private static final String TEST_PROP = "http://foo.org/vocabulary/indicators#testDataTypeProperty";
+	// data  URIs
+	private static final String DATE_TIME = "http://www.w3.org/2001/XMLSchema#dateTime";
 
 	static {
 		try {
+			/* create botnet class*/
 			final OwlClass botnet = new OwlClassImpl(new URI(BOTNET), "Botnet", "Typically a host used to control another host or malicious process. This could technically be internal or external.", 
 					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(BOTNET, botnet);
 			
+			/* attack phase class */
 			final OwlClass attackPhase = new OwlClassImpl(new URI(ATTACK_PHASE), "Attack Phase", "test attack phase comment", 
 					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(ATTACK_PHASE, attackPhase);
 			
+			/* file class */
 			final OwlClass file = new OwlClassImpl(new URI(FILE), "File", "Any type of file that signifies that an incident may have occurred or may be currently occurring.", 
 					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(FILE, file);
 			
+			/* internal indicator class */
+			final Property callsBackTo = new PropertyImpl("callsbackTo", "Identifies the relationship where one indicator callsback to another indicator for some purpose.", 
+					new URI(CALLS_BACK_TO),  new HashSet<URI>(Collections.singleton(new URI(INTERNAL_INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(EXTERNAL_INDICATOR))));
 			final OwlClass internalIndicator = new OwlClassImpl(new URI(INTERNAL_INDICATOR), "InternalIndicator", "Indicators that are typically found on the system(s) that are the target of the incident.", 
-					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
+					new HashSet<OwlClass>(), Collections.singleton(callsBackTo), new HashSet<Property>());
 			expectedClasses.put(INTERNAL_INDICATOR, internalIndicator);
 			
+			
+			/* external indicator class */
+			final Property servesFile = new PropertyImpl("servesFile", "Some 'thing' serves a file", 
+					new URI(SERVES_FILE),  new HashSet<URI>(Collections.singleton(new URI(EXTERNAL_INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(FILE))));
 			final OwlClass externalIndicator = new OwlClassImpl(new URI(EXTERNAL_INDICATOR), "ExternalIndicator", "Indicators that identify something that is participating in the incident in some way, but is not physically located on the targeted system(s). These indicators are typically represented by an IP address, DNS name, or URL.", 
-					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
+					new HashSet<OwlClass>(), Collections.singleton(servesFile), new HashSet<Property>());
 			expectedClasses.put(EXTERNAL_INDICATOR, externalIndicator);
 			
+			/* indicator class */
+			final Property dropsFile = new PropertyImpl("dropsFile", "Identifies the relationship where some indicator drops a file onto a system", 
+					new URI(DROPS_FILE),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(FILE))));
+			final Property uses = new PropertyImpl("uses", "Some indicator uses another for some purpose", 
+					new URI(USES),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))));
+			Set<Property> objPreds = new HashSet<Property>();
+			objPreds.add(dropsFile);
+			objPreds.add(uses);
+			final Property testProp = new PropertyImpl("testDataTypeProperty", "a datatype property", 
+					new URI(TEST_PROP),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(DATE_TIME))));
 			final OwlClass indicator = new OwlClassImpl(new URI(INDICATOR), "Indicator", "A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). ", 
-					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
+					new HashSet<OwlClass>(), objPreds, Collections.singleton(testProp));
 			expectedClasses.put(INDICATOR, indicator);
 			
 		} catch (Exception e) {
@@ -177,6 +207,7 @@ public class OwlSaxHandlerTest extends TestCase {
     		Property expectedPred = expectedPredsIter.next();
     		assertEquals(pred, expectedPred);
     		assertEquals(pred.getLabel(), expectedPred.getLabel());
+    		assertEquals(pred.getDescription(), expectedPred.getDescription());
     		assertEquals(pred.getURI(), expectedPred.getURI());
     		assertEquals(pred.getDomains().size(), expectedPred.getDomains().size());;
     		testURIs(pred.getDomains(), expectedPred.getDomains());
@@ -198,6 +229,8 @@ public class OwlSaxHandlerTest extends TestCase {
     		assertEquals(uri, expectedUri);
     	}
     }
+    
+
     
     
     

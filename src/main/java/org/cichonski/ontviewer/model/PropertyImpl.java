@@ -6,17 +6,23 @@ import java.util.Set;
 
 public class PropertyImpl implements Property, Comparable<PropertyImpl> {
 	private final String label;
+	private final String description;
 	private final URI uri;
 	private final Set<URI> domains;
 	private final Set<URI> ranges;
 	
 	
-	PropertyImpl(String label, URI uri, Set<URI> domains,
+	PropertyImpl(String label, String description, URI uri, Set<URI> domains,
 			Set<URI> ranges) {
 		this.label = label;
+		this.description = description;
 		this.uri = uri;
 		this.domains = domains;
 		this.ranges = ranges;
+	}
+	
+	public String getDescription() {
+		return description;
 	}
 	
 	public String getLabel() {

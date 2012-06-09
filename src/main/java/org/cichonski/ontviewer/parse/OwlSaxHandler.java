@@ -49,6 +49,7 @@ public class OwlSaxHandler extends DefaultHandler {
 
     private boolean root = true; //assume root until first element is past
     private Stack<Integer> currentClasses = new Stack<Integer>(); //place holder for nested classes
+    private Stack<Integer> unknonwElements = new Stack<Integer>(); //keep track of unknown elements we are traversing.
     private boolean owlClassLabel = false;
     private boolean owlClassComment = false;
     
@@ -73,7 +74,10 @@ public class OwlSaxHandler extends DefaultHandler {
             if (currentClasses.size() == 1){
                 startOwlClass(attributes);
             }
-        } else if (isOwlClassLabel(uri, localName, qName)){
+        } else if (currentClasses.size() == 1 && !isOwlClassLabel(uri, localName, qName) && !isOwlClassComment(uri, localName, qName)){
+        	// in an element somewhere (n-depth) under owl:Class that we don't know about...but it could have labels and comments...need to ignore them
+        	unknonwElements.push(1);
+    	} else if (isOwlClassLabel(uri, localName, qName)){
             owlClassLabel = true;
         } else if (isOwlClassComment(uri, localName, qName)){
             owlClassComment = true;
@@ -102,12 +106,12 @@ public class OwlSaxHandler extends DefaultHandler {
             if (currentClasses.isEmpty()){
                 currentBuilder = null;  
             }
-        }
-        if (isOwlClassLabel(uri, localName, qName)){
+        } else if (currentClasses.size() == 1 && !isOwlClassLabel(uri, localName, qName) && !isOwlClassComment(uri, localName, qName)){
+        	unknonwElements.pop();
+    	} else if (isOwlClassLabel(uri, localName, qName)){
             owlClassLabel = false;
             currentBuilder.setLabel(charBuffer.toString());
-        }
-        if (isOwlClassComment(uri, localName, qName)){
+        } else if (isOwlClassComment(uri, localName, qName)){
             owlClassComment = false;
             currentBuilder.setDescription(charBuffer.toString());
         }
@@ -180,11 +184,11 @@ public class OwlSaxHandler extends DefaultHandler {
     
 
     private boolean isOwlClassLabel(String uri, String localName, String qName){
-        return !currentClasses.isEmpty() && RDFS_NS.equals(uri) && "label".equals(localName.toLowerCase()); // assume subClass statements don't have comments
+        return unknonwElements.isEmpty() && !currentClasses.isEmpty() && RDFS_NS.equals(uri) && "label".equals(localName.toLowerCase()); // assume subClass statements don't have comments
     }
     
     private boolean isOwlClassComment(String uri, String localName, String qName){
-        return !currentClasses.isEmpty() && isRdfsComment(uri, localName, qName); // assume subClass statements don't have comments
+        return unknonwElements.isEmpty() && !currentClasses.isEmpty() && isRdfsComment(uri, localName, qName); // assume subClass statements don't have comments
     }
     
     private boolean isRdfsComment(String uri, String localName, String qName){

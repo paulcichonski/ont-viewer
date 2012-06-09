@@ -49,9 +49,7 @@
     >Attack Phase</rdfs:label>
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This essentially represents the lifecycle (or "Kill Chain") of an incident. Indicators will likely be associated with one-or-more phases of the attack, depending on what the indicator represents.  In general, the most common ordering is of [Reconnaissance --&gt; Weaponization --&gt; Delivery --&gt; Exploit --&gt; C2 --&gt; AttackerObjectives]. These phases do not always occur in a linear fashion, some may occur in parrallel, some may be interchanged, and some may be skipped all together.&#xD;
-&#xD;
-xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/life-cycle-stage</rdfs:comment>
+      >test attack phase comment</rdfs:comment>
     <owl:xsdMappingInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/life-cycle-stage</owl:xsdMappingInfo>
     <owl:oneOf rdf:parseType="Collection">
