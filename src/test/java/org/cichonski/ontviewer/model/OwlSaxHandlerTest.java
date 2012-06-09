@@ -5,7 +5,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -74,8 +77,9 @@ public class OwlSaxHandlerTest extends TestCase {
     
     
     public void testClassCache() throws Exception {
+    	InputStream ont = null;
     	try {
-        	InputStream ont = Thread.currentThread().getContextClassLoader().getResourceAsStream("ontologies/subset_indicators-vocabulary.owl");
+        	ont = Thread.currentThread().getContextClassLoader().getResourceAsStream("ontologies/subset_indicators-vocabulary.owl");
             OwlSaxHandler handler = new OwlSaxHandler();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setFeature("http://xml.org/sax/features/namespaces", true);
@@ -86,42 +90,54 @@ public class OwlSaxHandlerTest extends TestCase {
             Map<URI, OwlClass> classCache = handler.getClassCache();
             
             assertEquals(classCache.size(), 6);
-            
             // test all classess
             for (Map.Entry<URI, OwlClass> entry : classCache.entrySet()){
-            	URI key = entry.getKey();
             	OwlClass owlClass = entry.getValue();
-            	System.out.println("test generated class: " + owlClass);
-            	assertNotNull(owlClass);
-            	
-            	OwlClass expectedClass = expectedClasses.get(key.toString());
-            	assertNotNull(expectedClass);
-            	assertEquals(owlClass, expectedClass); //only inspects URI
-            	assertEquals(owlClass.hashCode(), expectedClass.hashCode()); //only inspects URI
-            	assertEquals(owlClass.getLabel(), expectedClass.getLabel());
-            	assertEquals(owlClass.getDescritpion(), expectedClass.getDescritpion());
-            	assertEquals(owlClass.getURI(), expectedClass.getURI());
-            	
-            	assertEquals(owlClass.getDataTypeProperty().size(), expectedClass.getDataTypeProperty().size());
-            	//todo: test dataTypeProperties
-            	
-            	assertEquals(owlClass.getObjectProperties().size(), expectedClass.getObjectProperties().size());
-            	//todo: test objectProperties
-            	
-            	assertEquals(owlClass.getSubClasses().size(), expectedClass.getSubClasses().size());
-            	//todo: test subClasses.
-            	
-            	
+            	OwlClass expectedClass = expectedClasses.get(entry.getKey().toString());
+            	testClasses(owlClass, expectedClass);
             }
-            
-            
-            ont.close();
             
     	} catch (Exception e){
     		e.printStackTrace();
     		throw new Exception(e);
+    	} finally {
+    		ont.close();
     	}
 
+    }
+    
+    private void testClasses(OwlClass owlClass, OwlClass expectedClass){
+    	System.out.println("testing generated class: " + owlClass);
+    	assertNotNull(owlClass);
+    	assertNotNull(expectedClass);
+    	assertEquals(owlClass, expectedClass); //only inspects URI
+    	assertEquals(owlClass.hashCode(), expectedClass.hashCode()); //only inspects URI
+    	assertEquals(owlClass.getLabel(), expectedClass.getLabel());
+    	assertEquals(owlClass.getDescritpion(), expectedClass.getDescritpion());
+    	assertEquals(owlClass.getURI(), expectedClass.getURI());
+    	
+    	assertEquals(owlClass.getDataTypeProperty().size(), expectedClass.getDataTypeProperty().size());
+    	testPredicates(owlClass.getDataTypeProperty(), expectedClass.getDataTypeProperty());
+    	
+    	assertEquals(owlClass.getObjectProperties().size(), expectedClass.getObjectProperties().size());
+    	testPredicates(owlClass.getObjectProperties(), expectedClass.getObjectProperties());
+    	
+    	assertEquals(owlClass.getSubClasses().size(), expectedClass.getSubClasses().size());
+    	// may test a class more than once, but that is fine
+    	Set<OwlClass> subClasses = new TreeSet<OwlClass>(owlClass.getSubClasses());
+    	Iterator<OwlClass> subClassIter = subClasses.iterator();
+    	Set<OwlClass> expectedSubClasses = new TreeSet<OwlClass>(expectedClass.getSubClasses());
+    	Iterator<OwlClass> expectedSubClassIter = expectedSubClasses.iterator();
+    	while (expectedSubClassIter.hasNext()) {
+    		// already ensured they are the same size, 
+    		testClasses(subClassIter.next(), expectedSubClassIter.next());
+    	}
+    	
+    	
+    }
+    
+    private void testPredicates(Set<Property> preds, Set<Property> expectedPreds){
+    	
     }
     
 }
