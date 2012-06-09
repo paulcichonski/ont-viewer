@@ -48,9 +48,7 @@
     <owl:oneOf rdf:parseType="Collection">
       <AttackPhase rdf:ID="AttackerObjectives_instance">
         <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-        >note: the extra '_instance' in the name is there for temporary purposes. Had to make all instances of AttackPhase also subClasses of AttackPhase as well to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept. </rdfs:comment>
-        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-        >Activity performed post-C2 establishment.  This includes installation of additional tools, lateral movement and data mining activities.</rdfs:comment>
+        >test attack phase insatnce  comment</rdfs:comment>
         <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
         >Attacker Objectives</rdfs:label>
       </AttackPhase>
@@ -98,9 +96,7 @@
     <owl:xsdMappingInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/life-cycle-stage</owl:xsdMappingInfo>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This essentially represents the lifecycle (or "Kill Chain") of an incident. Indicators will likely be associated with one-or-more phases of the attack, depending on what the indicator represents.  In general, the most common ordering is of [Reconnaissance --&gt; Weaponization --&gt; Delivery --&gt; Exploit --&gt; C2 --&gt; AttackerObjectives]. These phases do not always occur in a linear fashion, some may occur in parrallel, some may be interchanged, and some may be skipped all together.&#xD;
-&#xD;
-xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/life-cycle-stage</rdfs:comment>
+    >test attack phase comment</rdfs:comment>
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Attack Phase</rdfs:label>
@@ -112,9 +108,7 @@ xpath of element this is found in (as of v0.1 of indicators schema): /indicators
     >Indicator</rdfs:label>
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1).&#xD;
-&#xD;
-xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/indicator-type</rdfs:comment>
+      >A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). </rdfs:comment>
   </owl:Class>
   <owl:ObjectProperty rdf:ID="uses">
     <rdfs:domain rdf:resource="#Indicator"/>

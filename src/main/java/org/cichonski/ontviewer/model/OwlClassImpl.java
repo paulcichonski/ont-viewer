@@ -18,7 +18,7 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
     private final Set<DataTypeProperty> dataProperties;
     
 
-    
+    // only builder and tests should build
     OwlClassImpl(
             URI uri,
             String label,
