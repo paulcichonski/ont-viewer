@@ -30,27 +30,27 @@ public class OwlSaxHandlerTest extends TestCase {
 	static {
 		try {
 			final OwlClass botnet = new OwlClassImpl(new URI(BOTNET), "Botnet", "Typically a host used to control another host or malicious process. This could technically be internal or external.", 
-					new HashSet<OwlClass>(), new HashSet<ObjectProperty>(), new HashSet<DataTypeProperty>());
+					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(BOTNET, botnet);
 			
 			final OwlClass attackPhase = new OwlClassImpl(new URI(ATTACK_PHASE), "Attack Phase", "test attack phase comment", 
-					new HashSet<OwlClass>(), new HashSet<ObjectProperty>(), new HashSet<DataTypeProperty>());
+					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(ATTACK_PHASE, attackPhase);
 			
 			final OwlClass file = new OwlClassImpl(new URI(FILE), "File", "Any type of file that signifies that an incident may have occurred or may be currently occurring.", 
-					new HashSet<OwlClass>(), new HashSet<ObjectProperty>(), new HashSet<DataTypeProperty>());
+					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(FILE, file);
 			
 			final OwlClass internalIndicator = new OwlClassImpl(new URI(INTERNAL_INDICATOR), "InternalIndicator", "Indicators that are typically found on the system(s) that are the target of the incident.", 
-					new HashSet<OwlClass>(), new HashSet<ObjectProperty>(), new HashSet<DataTypeProperty>());
+					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(INTERNAL_INDICATOR, internalIndicator);
 			
 			final OwlClass externalIndicator = new OwlClassImpl(new URI(EXTERNAL_INDICATOR), "ExternalIndicator", "Indicators that identify something that is participating in the incident in some way, but is not physically located on the targeted system(s). These indicators are typically represented by an IP address, DNS name, or URL.", 
-					new HashSet<OwlClass>(), new HashSet<ObjectProperty>(), new HashSet<DataTypeProperty>());
+					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(EXTERNAL_INDICATOR, externalIndicator);
 			
 			final OwlClass indicator = new OwlClassImpl(new URI(INDICATOR), "Indicator", "A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). ", 
-					new HashSet<OwlClass>(), new HashSet<ObjectProperty>(), new HashSet<DataTypeProperty>());
+					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(INDICATOR, indicator);
 			
 		} catch (Exception e) {
@@ -123,4 +123,5 @@ public class OwlSaxHandlerTest extends TestCase {
     	}
 
     }
+    
 }

@@ -14,8 +14,8 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
     private final String label;
     private final String description;
     private final Set<OwlClass> subClasses;
-    private final Set<ObjectProperty> objectProperties;
-    private final Set<DataTypeProperty> dataProperties;
+    private final Set<Property> objectProperties;
+    private final Set<Property> dataProperties;
     
 
     // only builder and tests should build
@@ -24,8 +24,8 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
             String label,
             String description,
             Set<OwlClass> subClasses,
-            Set<ObjectProperty> objectProperties,
-            Set<DataTypeProperty> dataProperties) {
+            Set<Property> objectProperties,
+            Set<Property> dataProperties) {
         this.uri = uri;
         this.label = label;
         this.description = description;
@@ -56,12 +56,12 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
     }
 
     @Override
-    public Set<ObjectProperty> getObjectProperties() {
+    public Set<Property> getObjectProperties() {
         return Collections.unmodifiableSet(objectProperties);
     }
 
     @Override
-    public Set<DataTypeProperty> getDataTypeProperty() {
+    public Set<Property> getDataTypeProperty() {
         return Collections.unmodifiableSet(dataProperties);
     }
     

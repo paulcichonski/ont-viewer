@@ -14,8 +14,8 @@ public class OwlClassBuilder {
     private String label;
     private String description;
     private Set<OwlClass> subClasses;
-    private Set<ObjectProperty> objectProperties;
-    private Set<DataTypeProperty> dataProperties;
+    private Set<Property> objectProperties;
+    private Set<Property> dataProperties;
     
     public OwlClassBuilder() {
         // TODO Auto-generated constructor stub
@@ -42,10 +42,10 @@ public class OwlClassBuilder {
             subClasses = new HashSet<OwlClass>();
         }
         if (objectProperties == null){
-            objectProperties = new HashSet<ObjectProperty>();
+            objectProperties = new HashSet<Property>();
         }
         if (dataProperties == null){
-            dataProperties = new HashSet<DataTypeProperty>();
+            dataProperties = new HashSet<Property>();
         }
     }
 
@@ -69,12 +69,12 @@ public class OwlClassBuilder {
         return this;
     }
 
-    public OwlClassBuilder setObjectProperties(Set<ObjectProperty> objectProperties) {
+    public OwlClassBuilder setObjectProperties(Set<Property> objectProperties) {
         this.objectProperties = objectProperties;
         return this;
     }
 
-    public OwlClassBuilder setDataProperties(Set<DataTypeProperty> dataProperties) {
+    public OwlClassBuilder setDataProperties(Set<Property> dataProperties) {
         this.dataProperties = dataProperties;
         return this;
     }

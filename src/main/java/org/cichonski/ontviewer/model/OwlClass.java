@@ -27,7 +27,7 @@ public interface OwlClass {
     
     Set<OwlClass> getSubClasses();
     
-    Set<ObjectProperty> getObjectProperties();
+    Set<Property> getObjectProperties();
     
-    Set<DataTypeProperty> getDataTypeProperty();
+    Set<Property> getDataTypeProperty();
 }
