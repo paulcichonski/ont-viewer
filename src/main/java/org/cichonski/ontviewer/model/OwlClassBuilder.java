@@ -18,7 +18,9 @@ public class OwlClassBuilder {
     private Set<Property> dataProperties;
     
     public OwlClassBuilder() {
-        // TODO Auto-generated constructor stub
+        subClasses = new HashSet<OwlClass>();
+        objectProperties = new HashSet<Property>();
+        dataProperties = new HashSet<Property>();
     }
     
     /**
@@ -38,15 +40,6 @@ public class OwlClassBuilder {
         if (label == null || label.isEmpty()){
             label = uri.toString();
         }
-        if (subClasses == null){
-            subClasses = new HashSet<OwlClass>();
-        }
-        if (objectProperties == null){
-            objectProperties = new HashSet<Property>();
-        }
-        if (dataProperties == null){
-            dataProperties = new HashSet<Property>();
-        }
     }
 
     public OwlClassBuilder setUri(URI uri) {
@@ -64,18 +57,25 @@ public class OwlClassBuilder {
         return this;
     }
 
-    public OwlClassBuilder setSubClasses(Set<OwlClass> subClasses) {
-        this.subClasses = subClasses;
+    public OwlClassBuilder addSubClass(OwlClass subClass) {
+        if (subClass != null){
+        	subClasses.add(subClass);
+        }
         return this;
     }
 
-    public OwlClassBuilder setObjectProperties(Set<Property> objectProperties) {
-        this.objectProperties = objectProperties;
+    public OwlClassBuilder addObjectProperty(Property objectProperty) {
+        if (objectProperty != null){
+        	objectProperties.add(objectProperty);
+        }
         return this;
     }
 
-    public OwlClassBuilder setDataProperties(Set<Property> dataProperties) {
-        this.dataProperties = dataProperties;
+
+    public OwlClassBuilder addDataTypeProperty(Property dataProperty) {
+        if (dataProperty != null){
+        	dataProperties.add(dataProperty);
+        }
         return this;
     }
     

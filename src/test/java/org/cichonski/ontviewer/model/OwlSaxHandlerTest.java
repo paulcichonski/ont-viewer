@@ -3,8 +3,6 @@ package org.cichonski.ontviewer.model;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -80,7 +78,7 @@ public class OwlSaxHandlerTest extends TestCase {
 			Set<Property> objPreds = new HashSet<Property>();
 			objPreds.add(dropsFile);
 			objPreds.add(uses);
-			final Property testProp = new PropertyImpl("testDataTypeProperty", "a datatype property", 
+			final Property testProp = new PropertyImpl("Datatype Property Mapping", "a datatype property", 
 					new URI(TEST_PROP),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(DATE_TIME))));
 			final OwlClass indicator = new OwlClassImpl(new URI(INDICATOR), "Indicator", "A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). ", 
 					new HashSet<OwlClass>(), objPreds, Collections.singleton(testProp));

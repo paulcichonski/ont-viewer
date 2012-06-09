@@ -105,9 +105,7 @@
   </owl:Class>
   <owl:Class rdf:about="#Indicator">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1).&#xD;
-&#xD;
-xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/indicator-type</rdfs:comment>
+    >A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). </rdfs:comment>
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Indicator</rdfs:label>

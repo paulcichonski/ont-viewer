@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -13,6 +14,8 @@ import java.util.logging.Logger;
 
 import org.cichonski.ontviewer.model.OwlClass;
 import org.cichonski.ontviewer.model.OwlClassBuilder;
+import org.cichonski.ontviewer.model.Property;
+import org.cichonski.ontviewer.model.PropertyBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -39,19 +42,23 @@ public class OwlSaxHandler extends DefaultHandler {
     // stream state 
     // ***************************
     
-    private final Map<URI, OwlClassBuilder> builders = new HashMap<URI, OwlClassBuilder>();    
+    private final Map<URI, OwlClassBuilder> classBuilders = new HashMap<URI, OwlClassBuilder>();    
+    private final Set<Property> objectProperties = new HashSet<Property>();
+    private final Set<Property> dataTypeProperties = new HashSet<Property>();
+    
 
     private String xmlBase;
     
-    private OwlClassBuilder currentBuilder = null;
+    private OwlClassBuilder currentClassBuilder = null;
+    
+    private PropertyBuilder currentPropertyBuilder = null;
     
     private StringBuilder charBuffer = new StringBuilder();
 
     private boolean root = true; //assume root until first element is past
     private Stack<Integer> currentClasses = new Stack<Integer>(); //place holder for nested classes
     private Stack<Integer> unknonwElements = new Stack<Integer>(); //keep track of unknown elements we are traversing.
-    private boolean owlClassLabel = false;
-    private boolean owlClassComment = false;
+    private boolean property = false;
     
     public OwlSaxHandler() {
     }
@@ -74,28 +81,23 @@ public class OwlSaxHandler extends DefaultHandler {
             if (currentClasses.size() == 1){
                 startOwlClass(attributes);
             }
-        } else if (currentClasses.size() == 1 && !isOwlClassLabel(uri, localName, qName) && !isOwlClassComment(uri, localName, qName)){
-        	// in an element somewhere (n-depth) under owl:Class that we don't know about...but it could have labels and comments...need to ignore them
-        	unknonwElements.push(1);
-    	} else if (isOwlClassLabel(uri, localName, qName)){
-            owlClassLabel = true;
-        } else if (isOwlClassComment(uri, localName, qName)){
-            owlClassComment = true;
+        } else if (isUnknownElementInOwlClass(uri, localName, qName)){ 
+				// in an element somewhere (n-depth) under owl:Class that we don't know about...but it could have labels and comments...need to ignore them
+				unknonwElements.push(1);
+        } else if (isObjectProperty(uri, localName, qName) || isDataTypeProperty(uri, localName, qName)) {
+        	property = true;
+        	startProperty(attributes);
+        } else if (isPropertyDomain(uri, localName, qName)){
+        	parseDomain(attributes);
+        } else if (isPropertyRange(uri, localName, qName)){
+        	parseRange(attributes);
         }
-        
-        //todo: object properties
-        
-        //todo: data properties
-        
     }
     
     @Override
     public void characters(char[] ch, int start, int length)
             throws SAXException {
-        // only capture for things we care about
-        if (owlClassLabel || owlClassComment){
-            charBuffer.append(ch, start, length);
-        }
+    	charBuffer.append(ch, start, length);
     }
     
     @Override
@@ -104,18 +106,30 @@ public class OwlSaxHandler extends DefaultHandler {
         if (isOwlClass(uri, localName, qName)){
             currentClasses.pop();
             if (currentClasses.isEmpty()){
-                currentBuilder = null;  
+                currentClassBuilder = null;  
             }
-        } else if (currentClasses.size() == 1 && !isOwlClassLabel(uri, localName, qName) && !isOwlClassComment(uri, localName, qName)){
+        } else if (isUnknownElementInOwlClass(uri, localName, qName)){
         	unknonwElements.pop();
-    	} else if (isOwlClassLabel(uri, localName, qName)){
-            owlClassLabel = false;
-            currentBuilder.setLabel(charBuffer.toString());
-        } else if (isOwlClassComment(uri, localName, qName)){
-            owlClassComment = false;
-            currentBuilder.setDescription(charBuffer.toString());
-        }
+    	} else if (isTopLevelOwlClassLabel(uri, localName, qName)){
+            currentClassBuilder.setLabel(charBuffer.toString());
+        } else if (isTopLevelOwlClassComment(uri, localName, qName)){
+            currentClassBuilder.setDescription(charBuffer.toString());
+        } else if (isObjectProperty(uri, localName, qName)) {
+        	property = false;
+        	objectProperties.add(currentPropertyBuilder.build());
+        	currentPropertyBuilder = null;
+        } else if (isDataTypeProperty(uri, localName, qName)){
+        	property = false;
+        	dataTypeProperties.add(currentPropertyBuilder.build());
+        	currentPropertyBuilder = null;
+    	} else if (isPropertyLabel(uri, localName, qName)){
+        	currentPropertyBuilder.setLabel(charBuffer.toString());
+        } else if (isPropertyComment(uri, localName, qName)){
+        	currentPropertyBuilder.setDescription(charBuffer.toString());
+        } 
     }
+    
+    
     
     @Override
     public void endDocument() throws SAXException {
@@ -123,10 +137,16 @@ public class OwlSaxHandler extends DefaultHandler {
          * 1. set up all subClass relationships
          * 2. build all builders and add to both tree and cache
          */
-        
+        // need to add properties to their classes
+    	for (Property p : objectProperties){
+    		populateProperties(p, PropertyType.OBJECT);
+    	}
+    	for (Property p : dataTypeProperties){
+    		populateProperties(p, PropertyType.DATA);
+    	}
         
         //just for testing....need to redo
-        for (OwlClassBuilder builder : builders.values()){
+        for (OwlClassBuilder builder : classBuilders.values()){
             OwlClass owlClass = builder.build();
             classCache.put(owlClass.getURI(), owlClass);
             
@@ -140,8 +160,41 @@ public class OwlSaxHandler extends DefaultHandler {
         URI uri = resolveFullUriIdentifier(attributes);
         OwlClassBuilder builder = new OwlClassBuilder();
         builder.setUri(uri);
-        currentBuilder = builder;
-        builders.put(uri, builder);
+        currentClassBuilder = builder;
+        classBuilders.put(uri, builder);
+    }
+    
+    private void populateProperties(Property p, PropertyType type){
+		Set<URI> domains = p.getDomains();
+		for (URI domain : domains){
+			OwlClassBuilder classBuilder = classBuilders.get(domain);
+			if (classBuilder != null){
+				if (type.equals(PropertyType.OBJECT)) {
+					classBuilder.addObjectProperty(p);
+				} else if (type.equals(PropertyType.DATA)){
+					classBuilder.addDataTypeProperty(p);
+				}
+			}
+		}
+    }
+    
+
+    
+    private void startProperty(Attributes attributes){
+    	URI uri = resolveFullUriIdentifier(attributes);
+    	PropertyBuilder builder = new PropertyBuilder();
+    	builder.setUri(uri);
+    	currentPropertyBuilder = builder;
+    }
+    
+    private void parseDomain(Attributes attributes){
+    	URI uri = resolveFullUriIdentifier(attributes);
+    	currentPropertyBuilder.addDomain(uri);
+    }
+    
+    private void parseRange(Attributes attributes){
+    	URI uri = resolveFullUriIdentifier(attributes);
+    	currentPropertyBuilder.addRange(uri);
     }
     
 
@@ -158,41 +211,91 @@ public class OwlSaxHandler extends DefaultHandler {
         if (xmlBase == null || xmlBase.isEmpty()){
             throw new RuntimeException("no default namespace");
         }
-        String className = attributes.getValue(RDF_NS, "ID");  // rdf:ID gives a relative URI index without the #
+        String resourceName = attributes.getValue(RDF_NS, "ID");  // rdf:ID gives a relative URI index without the #
         try {
-            if (className != null && !className.isEmpty()){ 
-                String fullUri = xmlBase + "#" + className;
+            if (resourceName != null && !resourceName.isEmpty()){ 
+                String fullUri = xmlBase + "#" + resourceName;
                 return new URI(fullUri);
             } 
             //assume rdf:about, relative URI with prepended #
-            className = attributes.getValue(RDF_NS, "about");
-            if (className != null && !className.isEmpty()){ 
-                String fullUri = xmlBase + className;
+            resourceName = attributes.getValue(RDF_NS, "about");
+            if (resourceName != null && !resourceName.isEmpty()){ 
+                String fullUri = xmlBase + resourceName;
                 return new URI(fullUri);
             } 
+            // assume rdf:resource, relative URI with prepended #
+            resourceName = attributes.getValue(RDF_NS, "resource");
+            if (resourceName != null && !resourceName.isEmpty()){ 
+            	if (resourceName.startsWith("#")){
+                    String fullUri = xmlBase + resourceName;
+                    return new URI(fullUri);
+            	} else {
+            		//assume full URI alread (i.e., xsd datatype)
+            		return new URI(resourceName);
+            	}
+            } 
         } catch (URISyntaxException e){
-            log.log(Level.WARNING, "class: " + className, e);
+            log.log(Level.WARNING, "class: " + resourceName, e);
         }
         throw new RuntimeException("could not build URI"); // if it didn't work, everything else is dead
     }
     
 
+//***********************************
+// centralize element inspection logic
+//***********************************
     
     private boolean isOwlClass(String uri, String localName, String qName){
         return OWL_NS.equals(uri) && "class".equals(localName.toLowerCase());
     }
     
+    private boolean isUnknownElementInOwlClass(String uri, String localName, String qName){
+    	// in an element somewhere (n-depth) under owl:Class that we don't know about..
+    	return currentClasses.size() == 1 && !isTopLevelOwlClassLabel(uri, localName, qName) && !isTopLevelOwlClassComment(uri, localName, qName);
+    }
 
-    private boolean isOwlClassLabel(String uri, String localName, String qName){
-        return unknonwElements.isEmpty() && !currentClasses.isEmpty() && RDFS_NS.equals(uri) && "label".equals(localName.toLowerCase()); // assume subClass statements don't have comments
+    private boolean isTopLevelOwlClassLabel(String uri, String localName, String qName){
+        return unknonwElements.isEmpty() && !currentClasses.isEmpty() && isRdfsLabel(uri, localName, qName); // assume subClass statements don't have comments
     }
     
-    private boolean isOwlClassComment(String uri, String localName, String qName){
+    private boolean isTopLevelOwlClassComment(String uri, String localName, String qName){
         return unknonwElements.isEmpty() && !currentClasses.isEmpty() && isRdfsComment(uri, localName, qName); // assume subClass statements don't have comments
+    }
+    
+    private boolean isObjectProperty(String uri, String localName, String qName){
+    	return OWL_NS.equals(uri) && "objectproperty".equals(localName.toLowerCase());
+    }
+    
+    private boolean isDataTypeProperty(String uri, String localName, String qName){
+    	return OWL_NS.equals(uri) && "datatypeproperty".equals(localName.toLowerCase());
+    }
+    
+    private boolean isPropertyComment(String uri, String localName, String qName){
+    	return property && isRdfsComment(uri, localName, qName);
+    }
+    
+    private boolean isPropertyLabel(String uri, String localName, String qName){
+    	return property && isRdfsLabel(uri, localName, qName);
+    }
+    
+    private boolean isPropertyDomain(String uri, String localName, String qName){
+    	return property && RDFS_NS.equals(uri) && "domain".equals(localName.toLowerCase());
+    }
+    
+    private boolean isPropertyRange(String uri, String localName, String qName){
+    	return property && RDFS_NS.equals(uri) && "range".equals(localName.toLowerCase());
     }
     
     private boolean isRdfsComment(String uri, String localName, String qName){
         return RDFS_NS.equals(uri) && "comment".equals(localName.toLowerCase());
+    }
+    
+    private boolean isRdfsLabel(String uri, String localName, String qName){
+    	return RDFS_NS.equals(uri) && "label".equals(localName.toLowerCase());
+    }
+    
+    private static enum PropertyType {
+    	OBJECT, DATA;
     }
     
     
