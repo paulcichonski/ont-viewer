@@ -18,4 +18,9 @@ public class OwlSaxParserTest extends TestCase {
         // adds all methods beginning with 'test' to the suite.
         return new TestSuite(OwlSaxParserTest.class);
     }
+    
+    
+    public void testHandler(){
+    	
+    }
 }

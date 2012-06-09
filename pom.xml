@@ -11,17 +11,6 @@
   
   <name>ont-viewer</name>
   
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>central</id>
-      <name>Maven Repository Switchboard</name>
-      <url>http://repo1.maven.org/maven2</url>
-    </repository>
-  </repositories>
-  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
