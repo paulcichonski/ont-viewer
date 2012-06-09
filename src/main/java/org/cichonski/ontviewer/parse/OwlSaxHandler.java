@@ -227,7 +227,7 @@ public class OwlSaxHandler extends DefaultHandler {
     //right now this is assuming resource identifiers are in the xml:base..
     private URI resolveFullUriIdentifier(Attributes attributes){
         if (xmlBase == null || xmlBase.isEmpty()){
-            throw new RuntimeException("no default namespace");
+            throw new RuntimeException("no xml:base specified");
         }
         String resourceName = attributes.getValue(RDF_NS, "ID");  // rdf:ID gives a relative URI index without the #
         try {
