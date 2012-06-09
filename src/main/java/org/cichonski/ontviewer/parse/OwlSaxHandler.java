@@ -34,25 +34,19 @@ public class OwlSaxHandler extends DefaultHandler {
     // preserves the tree structure of the classes
     private final Set<OwlClass> classTree = new TreeSet<OwlClass>(); 
     
-    private final Map<URI, OwlClassBuilder> builders = new HashMap<URI, OwlClassBuilder>();
-    
-    // key = namespace, val = prefix
-    private final Map<String, String> nameSpaces = new HashMap<String, String>();
     
     // ***************************
     // stream state 
     // ***************************
     
+    private final Map<URI, OwlClassBuilder> builders = new HashMap<URI, OwlClassBuilder>();    
+
     private String xmlBase;
     
     private OwlClassBuilder currentBuilder = null;
     
     private StringBuilder charBuffer = new StringBuilder();
-    
-    
-    // *************
-    // element flags
-    // *************
+
     private boolean root = true; //assume root until first element is past
     private Stack<Integer> currentClasses = new Stack<Integer>(); //place holder for nested classes
     private boolean owlClassLabel = false;
@@ -60,15 +54,7 @@ public class OwlSaxHandler extends DefaultHandler {
     
     public OwlSaxHandler() {
     }
-    
 
-    
-    @Override
-    public void startPrefixMapping(String prefix, String uri)
-            throws SAXException {
-        // TODO Auto-generated method stub
-        nameSpaces.put(uri, prefix);
-    }
     
     @Override
     public void startElement(
