@@ -195,6 +195,10 @@ public class OwlSaxHandler extends DefaultHandler {
     public Map<URI, OwlClass> getClassCache() {
         return Collections.unmodifiableMap(classCache);
     }
+    
+    public Set<OwlClass> getClassTree() {
+    	 return Collections.unmodifiableSet(classTree);
+	}
 
 
 }

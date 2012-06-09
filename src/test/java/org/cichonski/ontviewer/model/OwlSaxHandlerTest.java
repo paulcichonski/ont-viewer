@@ -75,7 +75,10 @@ public class OwlSaxHandlerTest extends TestCase {
         return new TestSuite(OwlSaxHandlerTest.class);
     }
     
-    
+    /**
+     * Test that the handler generated the correct class cache representation. 
+     * @throws Exception
+     */
     public void testClassCache() throws Exception {
     	InputStream ont = null;
     	try {
@@ -103,8 +106,35 @@ public class OwlSaxHandlerTest extends TestCase {
     	} finally {
     		ont.close();
     	}
-
     }
+    
+    /**
+     * Test that the handler generated the correct class tree representation.
+     */
+    public void testClassTree() throws Exception{
+    	InputStream ont = null;
+    	try {
+        	ont = Thread.currentThread().getContextClassLoader().getResourceAsStream("ontologies/subset_indicators-vocabulary.owl");
+            final OwlSaxHandler handler = new OwlSaxHandler();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setFeature("http://xml.org/sax/features/namespaces", true);
+            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+            final SAXParser parser = factory.newSAXParser();
+            parser.parse(ont, handler);
+            
+            final Set<OwlClass> classTree = handler.getClassTree();
+            
+            //TODO: set up mock class tree, then test against this one.
+
+            
+    	} catch (Exception e){
+    		e.printStackTrace();
+    		throw new Exception(e);
+    	} finally {
+    		ont.close();
+    	}
+    }
+    
     
     private void testClasses(OwlClass owlClass, OwlClass expectedClass){
     	System.out.println("testing generated class: " + owlClass);
@@ -132,10 +162,9 @@ public class OwlSaxHandlerTest extends TestCase {
     		// already ensured they are the same size, 
     		testClasses(subClassIter.next(), expectedSubClassIter.next());
     	}
-    	
-    	
     }
     
+
     private void testPredicates(Set<Property> preds, Set<Property> expectedPreds){
     	assertEquals(preds.size(), expectedPreds.size());
     	//ensure correct order
@@ -169,5 +198,7 @@ public class OwlSaxHandlerTest extends TestCase {
     		assertEquals(uri, expectedUri);
     	}
     }
+    
+    
     
 }
