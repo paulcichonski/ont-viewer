@@ -30,6 +30,7 @@ public class OwlSaxHandler extends DefaultHandler {
     private static final String OWL_NS = "http://www.w3.org/2002/07/owl#";
     private static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
     private static final String RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";
+    private static final String OWL_THING = "http://www.w3.org/2002/07/owl#Thing";
     
     // all classes for easy access
     private final Map<URI, OwlClass> classCache = new HashMap<URI, OwlClass>();
@@ -43,7 +44,8 @@ public class OwlSaxHandler extends DefaultHandler {
     // ***************************
     
     private final Map<URI, OwlClassBuilder> classBuilders = new HashMap<URI, OwlClassBuilder>();    
-    private final Map<URI, URI> subClassMap = new HashMap<URI, URI>(); // key=subclass URI, value = superclass URI.
+    // key=subclass URI, value = superclass URI.
+    private final Map<URI, URI> subClassMap = new HashMap<URI, URI>();
     private final Set<Property> objectProperties = new HashSet<Property>();
     private final Set<Property> dataTypeProperties = new HashSet<Property>();
     
@@ -83,9 +85,20 @@ public class OwlSaxHandler extends DefaultHandler {
             if (currentClasses.size() == 1){
                 startOwlClass(attributes);
             } else {
-            	//assume subclasses only nest 1 deep
+            	/* assume subclasses only nest 1 deep ---> this is only one way to find the subClass, when it looks like:
+            	    	<rdfs:subClassOf>
+      						<owl:Class rdf:ID="InternalIndicator"/>
+    					</rdfs:subClassOf>
+    			*/
             	parseSubClass(attributes);
             }
+        } else if (isSubClassElement(uri, localName, qName)){
+        	/* second way to find a subClass, when it looks like, only enter if there is an attribute. luckily the attribute is the same:
+        	 *  <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
+        	 */
+        	if (attributes.getLength() > 0){
+        		parseSubClass(attributes);
+        	}
         } else if (isUnknownElementInOwlClass(uri, localName, qName)){ 
 				// in an element somewhere (n-depth) under owl:Class that we don't know about...but it could have labels and comments...need to ignore them
 				unknonwElements.push(1);
@@ -138,11 +151,16 @@ public class OwlSaxHandler extends DefaultHandler {
     
     @Override
     public void endDocument() throws SAXException {
+    	/* NOTES:
+    	 * There are some optimizations that can be done here:
+    	 * 1) calling build() on every class will result in many duplacate build() being called
+    	 * since each build() recursively calles build() on its subClasses, which are also in the classbuilders map.
+    	 * So....if this causes performance issues add some sort of caching/memoization (it probably won't though).
+    	 */
+    	
         /* TODO:
-         * 1. subClass mappings are in the subClasses Map, need to assemble into the build set
          * 2. build all builders and add to both tree and cache
          */
-
     	
     	for (Property p : objectProperties){
     		populateProperties(p, PropertyType.OBJECT);
@@ -150,8 +168,9 @@ public class OwlSaxHandler extends DefaultHandler {
     	for (Property p : dataTypeProperties){
     		populateProperties(p, PropertyType.DATA);
     	}
+    	
+    	assembleSubClasses();
         
-        //just for testing....need to redo
         for (OwlClassBuilder builder : classBuilders.values()){
             OwlClass owlClass = builder.build();
             classCache.put(owlClass.getURI(), owlClass);
@@ -173,14 +192,44 @@ public class OwlSaxHandler extends DefaultHandler {
     private void parseSubClass(Attributes attributes){
     	// **** !!!! Important: This assumes that a class is only a subClass of one other class !!! ****
     	// **** !!!! While not valid according to the spec, we shouldn't be seeing any ontologies that break this rule !!!! ****
-    	URI uri = resolveFullUriIdentifier(attributes);
-		if (subClassMap.containsKey(uri)) {
+    	
+    	// the class being built is the actual subclass
+		URI subClassURI = currentClassBuilder.getUri();
+    	if (subClassMap.containsKey(subClassURI)) {
 			throw new RuntimeException(
-					currentClassBuilder.getUri().toString()
+					subClassURI.toString()
 							+ " seems to declare two subclassOf relationships. This is not currently supported");
 		}
-    	subClassMap.put(currentClassBuilder.getUri(), uri); // the class being built is the actual subclass
+    	URI superClassUri = resolveFullUriIdentifier(attributes);
+    	subClassMap.put(subClassURI, superClassUri); 
     }
+    
+	/**
+	 * should only be called after the document has been parsed, or on the
+	 * endDocument() method.
+	 */
+	private void assembleSubClasses() {
+		for (Map.Entry<URI, URI> entry : subClassMap.entrySet()) {
+			OwlClassBuilder subClass = classBuilders.get(entry.getKey());
+			OwlClassBuilder superClass = classBuilders.get(entry.getValue());
+			if (subClass != null && superClass != null) {
+				superClass.addSubClass(subClass);
+			} else {
+				try {
+					if (entry.getValue().equals(new URI(OWL_THING))) {
+						// not supporting OWL Thing right now
+						log.log(Level.INFO,
+								"skipping OWL Thing superclass declaration from "
+										+ entry.getKey().toString());
+					} else {
+						throw new NullPointerException("class not found");
+					}
+				} catch (URISyntaxException e) {
+					log.log(Level.WARNING, "could not build OWL THING URI", e);
+				}
+			}
+		}
+	}
     
     private void populateProperties(Property p, PropertyType type){
 		Set<URI> domains = p.getDomains();
@@ -195,6 +244,7 @@ public class OwlSaxHandler extends DefaultHandler {
 			}
 		}
     }
+    
     
 
     
@@ -269,15 +319,25 @@ public class OwlSaxHandler extends DefaultHandler {
     
     private boolean isUnknownElementInOwlClass(String uri, String localName, String qName){
     	// in an element somewhere (n-depth) under owl:Class that we don't know about..
-    	return currentClasses.size() == 1 && !isTopLevelOwlClassLabel(uri, localName, qName) && !isTopLevelOwlClassComment(uri, localName, qName);
+    	// obviously not scaleable...find better way.
+    	return currentClasses.size() == 1 && !isSubClassElement(uri, localName, qName) && !isTopLevelOwlClassLabel(uri, localName, qName) 
+    			&& !isTopLevelOwlClassComment(uri, localName, qName);
     }
 
     private boolean isTopLevelOwlClassLabel(String uri, String localName, String qName){
-        return unknonwElements.isEmpty() && !currentClasses.isEmpty() && isRdfsLabel(uri, localName, qName); // assume subClass statements don't have comments
+        return isParserInTopLevelOwlClass(uri, localName, qName) && isRdfsLabel(uri, localName, qName); // assume subClass statements don't have comments
     }
     
     private boolean isTopLevelOwlClassComment(String uri, String localName, String qName){
-        return unknonwElements.isEmpty() && !currentClasses.isEmpty() && isRdfsComment(uri, localName, qName); // assume subClass statements don't have comments
+        return isParserInTopLevelOwlClass(uri, localName, qName) && isRdfsComment(uri, localName, qName); // assume subClass statements don't have comments
+    }
+    
+    private boolean isSubClassElement(String uri, String localName, String qName){
+    	return isParserInTopLevelOwlClass(uri, localName, qName) && RDFS_NS.equals(uri) && "subclassof".equals(localName.toLowerCase());
+    }
+    
+    private boolean isParserInTopLevelOwlClass(String uri, String localName, String qName){
+    	return unknonwElements.isEmpty() && !currentClasses.isEmpty();
     }
     
     private boolean isObjectProperty(String uri, String localName, String qName){

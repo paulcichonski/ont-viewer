@@ -55,22 +55,27 @@ public class OwlSaxHandlerTest extends TestCase {
 					new HashSet<OwlClass>(), new HashSet<Property>(), new HashSet<Property>());
 			expectedClasses.put(FILE, file);
 			
-			/* internal indicator class */
+			/* internal indicator class, has file as subClass */
+			final Set<OwlClass> internalIndSubClasses = Collections.singleton(file);
 			final Property callsBackTo = new PropertyImpl("callsbackTo", "Identifies the relationship where one indicator callsback to another indicator for some purpose.", 
 					new URI(CALLS_BACK_TO),  new HashSet<URI>(Collections.singleton(new URI(INTERNAL_INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(EXTERNAL_INDICATOR))));
 			final OwlClass internalIndicator = new OwlClassImpl(new URI(INTERNAL_INDICATOR), "InternalIndicator", "Indicators that are typically found on the system(s) that are the target of the incident.", 
-					new HashSet<OwlClass>(), Collections.singleton(callsBackTo), new HashSet<Property>());
+					internalIndSubClasses, Collections.singleton(callsBackTo), new HashSet<Property>());
 			expectedClasses.put(INTERNAL_INDICATOR, internalIndicator);
 			
 			
-			/* external indicator class */
+			/* external indicator class, has a botnet as a subclass */
+			final Set<OwlClass> externalIndSubClasses = Collections.singleton(botnet);
 			final Property servesFile = new PropertyImpl("servesFile", "Some 'thing' serves a file", 
 					new URI(SERVES_FILE),  new HashSet<URI>(Collections.singleton(new URI(EXTERNAL_INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(FILE))));
 			final OwlClass externalIndicator = new OwlClassImpl(new URI(EXTERNAL_INDICATOR), "ExternalIndicator", "Indicators that identify something that is participating in the incident in some way, but is not physically located on the targeted system(s). These indicators are typically represented by an IP address, DNS name, or URL.", 
-					new HashSet<OwlClass>(), Collections.singleton(servesFile), new HashSet<Property>());
+					externalIndSubClasses, Collections.singleton(servesFile), new HashSet<Property>());
 			expectedClasses.put(EXTERNAL_INDICATOR, externalIndicator);
 			
-			/* indicator class */
+			/* indicator class, has internal and external indicators as subClasses */
+			Set<OwlClass> indSubClasses = new HashSet<OwlClass>();
+			indSubClasses.add(internalIndicator); 
+			indSubClasses.add(externalIndicator);
 			final Property dropsFile = new PropertyImpl("dropsFile", "Identifies the relationship where some indicator drops a file onto a system", 
 					new URI(DROPS_FILE),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(FILE))));
 			final Property uses = new PropertyImpl("uses", "Some indicator uses another for some purpose", 
@@ -81,7 +86,7 @@ public class OwlSaxHandlerTest extends TestCase {
 			final Property testProp = new PropertyImpl("Datatype Property Mapping", "a datatype property", 
 					new URI(TEST_PROP),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(DATE_TIME))));
 			final OwlClass indicator = new OwlClassImpl(new URI(INDICATOR), "Indicator", "A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). ", 
-					new HashSet<OwlClass>(), objPreds, Collections.singleton(testProp));
+					indSubClasses, objPreds, Collections.singleton(testProp));
 			expectedClasses.put(INDICATOR, indicator);
 			
 		} catch (Exception e) {
@@ -148,7 +153,7 @@ public class OwlSaxHandlerTest extends TestCase {
             factory.setFeature("http://xml.org/sax/features/namespaces", true);
             factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
             final SAXParser parser = factory.newSAXParser();
-            parser.parse(ont, handler);
+//            parser.parse(ont, handler);
             
             final Set<OwlClass> classTree = handler.getClassTree();
             
