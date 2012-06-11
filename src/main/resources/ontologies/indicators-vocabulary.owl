@@ -19,6 +19,15 @@
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Dropped Malicious</rdfs:label>
   </owl:Class>
+  <owl:Class rdf:ID="InfoStealer">
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Information Stealer</rdfs:label>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Software used to identify and steal information from a compromise host.</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="MaliciousSoftware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
   <owl:Class rdf:ID="Nameserver">
     <rdfs:subClassOf>
       <owl:Class rdf:ID="ExternalIndicator"/>
@@ -28,7 +37,34 @@
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Nameserver</rdfs:label>
   </owl:Class>
-  <owl:Class rdf:ID="MaliciousSoftware">
+  <owl:Class rdf:ID="Dropper">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MaliciousSoftware"/>
+    </rdfs:subClassOf>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Software</rdfs:label>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Trojan that creates additional new malicious files on a compromised host.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="Backdoor">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >File that allows remote access into the victim machine/system.</rdfs:comment>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Backdoor</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="File"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="PasswordStealer">
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Password Stealer</rdfs:label>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Software designed to identify and steal user names and passwords from a compromised host. This includes extraction of information stored in authentication system files on the host.</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#MaliciousSoftware"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#MaliciousSoftware">
     <rdfs:subClassOf>
       <owl:Class rdf:ID="InternalIndicator"/>
     </rdfs:subClassOf>
@@ -37,14 +73,7 @@
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Malicious Software</rdfs:label>
   </owl:Class>
-  <owl:Class rdf:ID="PasswordStealer">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Password Stealer</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Software designed to identify and steal user names and passwords from a compromised host. This includes extraction of information stored in authentication system files on the host.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#MaliciousSoftware"/>
-  </owl:Class>
-  <owl:Class rdf:ID="File">
+  <owl:Class rdf:about="#File">
     <rdfs:subClassOf>
       <owl:Class rdf:about="#InternalIndicator"/>
     </rdfs:subClassOf>
@@ -52,6 +81,15 @@
     >File</rdfs:label>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Any type of file that signifies that an incident may have occurred or may be currently occurring.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="Scanner">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#ExternalIndicator"/>
+    </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Typically indicates something being used to scan or brute-force (ssh, rdp, telnet, etc...). </rdfs:comment>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Scanner</rdfs:label>
   </owl:Class>
   <owl:Class rdf:ID="Malware">
     <rdfs:subClassOf>
@@ -61,6 +99,13 @@
     >Typically a host used to exploit and/or drop malware to a host for the first time.</rdfs:comment>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Malware</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Rootkit">
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Rootkit</rdfs:label>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Malicious software that allows continued access to a compromised host while concealing its presence from standard system functionality.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#MaliciousSoftware"/>
   </owl:Class>
   <owl:Class rdf:ID="DroppedBenign">
     <rdfs:subClassOf>
@@ -75,12 +120,6 @@
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Attack Phase</rdfs:label>
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This essentially represents the lifecycle (or "Kill Chain") of an incident. Indicators will likely be associated with one-or-more phases of the attack, depending on what the indicator represents.  In general, the most common ordering is of [Reconnaissance --&gt; Weaponization --&gt; Delivery --&gt; Exploit --&gt; C2 --&gt; AttackerObjectives]. These phases do not always occur in a linear fashion, some may occur in parrallel, some may be interchanged, and some may be skipped all together.&#xD;
-&#xD;
-xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/life-cycle-stage</rdfs:comment>
-    <owl:xsdMappingInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/life-cycle-stage</owl:xsdMappingInfo>
     <owl:oneOf rdf:parseType="Collection">
       <AttackPhase rdf:ID="AttackerObjectives_instance">
         <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -131,129 +170,22 @@ xpath of element this is found in (as of v0.1 of indicators schema): /indicators
         >note: the extra '_instance' in the name is there for temporary purposes. Had to make all instances of AttackPhase also subClasses of AttackPhase as well to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept. </rdfs:comment>
       </AttackPhase>
     </owl:oneOf>
-  </owl:Class>
-  <owl:Class rdf:ID="Delivery">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Delivery</rdfs:label>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >The activity related to the methods of malicious payload delivery.&#xD;
-&#xD;
-NOTE: This should really be modeled as an instance of AttackPhase and not a subClass, but had to make it a subClass (for now) to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#AttackPhase"/>
+    >This essentially represents the lifecycle (or "Kill Chain") of an incident. Indicators will likely be associated with one-or-more phases of the attack, depending on what the indicator represents.  In general, the most common ordering is of [Reconnaissance --&gt; Weaponization --&gt; Delivery --&gt; Exploit --&gt; C2 --&gt; AttackerObjectives]. These phases do not always occur in a linear fashion, some may occur in parrallel, some may be interchanged, and some may be skipped all together.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="Indicator">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1).</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Indicator</rdfs:label>
   </owl:Class>
   <owl:Class rdf:about="#ExternalIndicator">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Indicators that identify something that is participating in the incident in some way, but is not physically located on the targeted system(s). These indicators are typically represented by an IP address, DNS name, or URL.</rdfs:comment>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >ExternalIndicator</rdfs:label>
-    <rdfs:subClassOf>
-      <owl:Class rdf:ID="Indicator"/>
-    </rdfs:subClassOf>
-  </owl:Class>
-  <owl:Class rdf:ID="Reconnaissance">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Activity relating to the attacker performing preliminary research to gather data on the target computing environment.&#xD;
-&#xD;
-NOTE: This should really be modeled as an instance of AttackPhase and not a subClass, but had to make it a subClass (for now) to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept.</rdfs:comment>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Reconnaissance</rdfs:label>
-    <rdfs:subClassOf rdf:resource="#AttackPhase"/>
-  </owl:Class>
-  <owl:Class rdf:ID="CriminalNetwork">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >CriminalNetwork</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Typically a rogue, hijacked, bullet-proof or known criminal network.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Exploit">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Exploit</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >The activity related to the actual exploitation of some vulnerability that allows an attacker to perform malicious activity on the target system.&#xD;
-&#xD;
-NOTE: This should really be modeled as an instance of AttackPhase and not a subClass, but had to make it a subClass (for now) to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#AttackPhase"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Phishing">
-    <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >A luring attempt at a victim to exfiltrate some sort of credential.</rdfs:comment>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Phishing</rdfs:label>
-  </owl:Class>
-  <owl:Class rdf:ID="InfoStealer">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Information Stealer</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Software used to identify and steal information from a compromise host.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#MaliciousSoftware"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Dropper">
-    <rdfs:subClassOf rdf:resource="#MaliciousSoftware"/>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Software</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Trojan that creates additional new malicious files on a compromised host.</rdfs:comment>
-  </owl:Class>
-  <owl:Class rdf:ID="Backdoor">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >File that allows remote access into the victim machine/system.</rdfs:comment>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Backdoor</rdfs:label>
-    <rdfs:subClassOf rdf:resource="#File"/>
-  </owl:Class>
-  <owl:Class rdf:ID="Weaponization">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Weaponization</rdfs:label>
-    <rdfs:subClassOf rdf:resource="#AttackPhase"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Any activity relating to the placement of a malicious payload into some delivery vehicle (e.g., generating spear phishing emails, embedding Trojan payloads into files for delivery).  Indicators will include observed strings identifying the tools and/or services used to generate and disseminate spear phishing messages, as well as the tools used to embed malicious payloads into file attachments.&#xD;
-&#xD;
-NOTE: This should really be modeled as an instance of AttackPhase and not a subClass, but had to make it a subClass (for now) to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept.</rdfs:comment>
-  </owl:Class>
-  <owl:Class rdf:ID="Scanner">
-    <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Typically indicates something being used to scan or brute-force (ssh, rdp, telnet, etc...). </rdfs:comment>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Scanner</rdfs:label>
-  </owl:Class>
-  <owl:Class rdf:ID="Rootkit">
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Rootkit</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Malicious software that allows continued access to a compromised host while concealing its presence from standard system functionality.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#MaliciousSoftware"/>
-  </owl:Class>
-  <owl:Class rdf:about="#Indicator">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1).&#xD;
-&#xD;
-xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/indicator-type</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Indicator</rdfs:label>
-    <owl:xsdMappingInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >xpath of element this is found in (as of v0.1 of indicators schema): /indicators/indicator/indicator-type</owl:xsdMappingInfo>
-  </owl:Class>
-  <owl:Class rdf:ID="AttackerObjectives">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Activity performed post-C2 establishment.  This includes installation of additional tools, lateral movement and data mining activities.&#xD;
-&#xD;
-NOTE: This should really be modeled as an instance of AttackPhase and not a subClass, but had to make it a subClass (for now) to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept. </rdfs:comment>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >AttackerObjectives</rdfs:label>
-    <rdfs:subClassOf rdf:resource="#AttackPhase"/>
-  </owl:Class>
-  <owl:Class rdf:ID="C2">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Any activity used to establish/maintain communications between the threat actor and the victim system.  This includes indicators related to C2 infrastructure and outbound traffic.&#xD;
-&#xD;
-NOTE: This should really be modeled as an instance of AttackPhase and not a subClass, but had to make it a subClass (for now) to ensure that they were displayed in the vocabulary management tool. This is a large "hack", but is necessary for the desired purpose of driving the discussion using a common visualization. The subClass version of the AttackPhase instances should eventually be deleted as it is the incorrect way to model this concept. </rdfs:comment>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >C2</rdfs:label>
-    <rdfs:subClassOf rdf:resource="#AttackPhase"/>
+    <rdfs:subClassOf rdf:resource="#Indicator"/>
   </owl:Class>
   <owl:Class rdf:about="#DroppedFile">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -269,12 +201,12 @@ NOTE: This should really be modeled as an instance of AttackPhase and not a subC
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Botnet</rdfs:label>
   </owl:Class>
-  <owl:Class rdf:about="#InternalIndicator">
+  <owl:Class rdf:ID="CriminalNetwork">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >InternalIndicator</rdfs:label>
+    >CriminalNetwork</rdfs:label>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Indicators that are typically found on the system(s) that are the target of the incident.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#Indicator"/>
+    >Typically a rogue, hijacked, bullet-proof or known criminal network.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
   </owl:Class>
   <owl:Class rdf:ID="ConfigFile">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -283,12 +215,26 @@ NOTE: This should really be modeled as an instance of AttackPhase and not a subC
     >Configuration File</rdfs:label>
     <rdfs:subClassOf rdf:resource="#File"/>
   </owl:Class>
+  <owl:Class rdf:about="#InternalIndicator">
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >InternalIndicator</rdfs:label>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Indicators that are typically found on the system(s) that are the target of the incident.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#Indicator"/>
+  </owl:Class>
   <owl:Class rdf:ID="Spam">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Typically indicates something being used to facilitate the sending of spam.</rdfs:comment>
+    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Spam</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Phishing">
     <rdfs:subClassOf rdf:resource="#ExternalIndicator"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Spam</rdfs:comment>
+    >A luring attempt at a victim to exfiltrate some sort of credential.</rdfs:comment>
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Typically indicates something being used to facilitate the sending of spam.</rdfs:label>
+    >Phishing</rdfs:label>
   </owl:Class>
   <owl:ObjectProperty rdf:ID="uses">
     <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -322,13 +268,6 @@ NOTE: This should really be modeled as an instance of AttackPhase and not a subC
     >servesFile</rdfs:label>
     <rdfs:range rdf:resource="#File"/>
   </owl:ObjectProperty>
-  <owl:AnnotationProperty rdf:about="http://www.w3.org/2002/07/owl#xsdMappingInfo">
-    <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2000/01/rdf-schema#comment"/>
-    <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >xsdMappingInfo</rdfs:label>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Information relating to how some 'thing' maps to a representation in XSD.</rdfs:comment>
-  </owl:AnnotationProperty>
 </rdf:RDF>
 
 <!-- Created with TopBraid -->

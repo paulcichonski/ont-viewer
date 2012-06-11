@@ -12,28 +12,67 @@
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
 	<meta name="robots" content="index, follow" />
-	<link rel="stylesheet" type="text/css" href="css/default.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="../css/default.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="../css/schema.css" media="all"/>
 </head>
 <body>
 
-	<table class=h>
-		<tr>
-			<td class="tc" colspan=4><a href="../DataType">DataType</a></td>
-		</tr>
+<div id="header"><h1>Security Automation Controlled Vocabularies / Schemas</h1></div>
 
-    	<tr>
-          <td class="space"></td>
-          <td class="bar"></td>
-          <td class="space"></td>
-          <td>
-    		<table class=h>
-    			<tr>
-    				<td class="tc" colspan=4><a href="../Boolean">Boolean</a></td>
-    			</tr>
-    		</table>
-    	  </td>
-    	</tr>
-	</table>
+
+	<div id="content" class="col1">
+
+
+    	<table class=h>
+    		<tr>
+    			<td class="tc" colspan=4><a href="">Thing</a></td>
+    		</tr>
+    
+    		#foreach($class in $root.getSubClasses())
+    			
+    		    <tr>
+    				<td class="space"></td>
+                    <td class="bar"></td>
+                    <td class="space"></td>
+                    <td>
+    					<table class=h>
+    						<tr>
+    							<td class="tc" colspan=4><a href="../${class.getURI()}">${class.getLabel()}</a>: ${class.getDescritpion()}</td>
+                            </tr>
+							
+							#macro ( recursive $e )     
+								#if( $e.getSubClasses().size() > 0 )
+									#foreach ($child in $e.getSubClasses() )
+										<tr>
+											<td class="space"></td>
+											<td class="bar"></td>
+											<td class="space"></td>
+											<td>
+												<table class=h>
+													<tr>
+														<td class="tc" colspan=4><a href="../${child.getURI()}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
+													</tr>
+													#recursive( $child ) 
+                                                </table>
+                                            </td>
+                                        </tr>
+										
+									#end
+
+								#end
+							#end
+							#recursive(${class})
+                			</tr>
+                		</table>
+    				</td>
+                </tr>
+    		#end
+    			
+    
+    	</table>
+	
+	</div>
+		
 	
 </body>
 </html>

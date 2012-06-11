@@ -1,5 +1,5 @@
 <html>
 <body>
-<h2>Hello World!</h2>
+<h2><a href="vocabs">vocabs</a></h2>
 </body>
 </html>

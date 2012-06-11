@@ -13,21 +13,32 @@ import javax.servlet.http.HttpServletResponse;
  * @author Paul Cichonski
  *
  */
-public class OntologyViewer extends HttpServlet {
+public final class OntologyViewer extends HttpServlet {
     /** */
     private static final long serialVersionUID = 1L;
+    private static final String URI_MAPPING = "/vocabs";
     
     @Override
     public void init(ServletConfig config) throws ServletException {
         // TODO Auto-generated method stub
         super.init();
-        Application.initializeApplication(config.getServletContext().getContextPath());
+        Application.initializeApplication(config.getServletContext().getContextPath() + URI_MAPPING);
     }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // TODO Auto-generated method stub
+        doRequest(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doRequest(request, response);
+    }
+    
+    private void doRequest(HttpServletRequest request, HttpServletResponse response)
+        throws ServletException, IOException {
         Application.getInstance().processRequest(request, response);
     }
 }

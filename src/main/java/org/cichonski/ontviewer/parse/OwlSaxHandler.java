@@ -25,7 +25,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *
  */
 public class OwlSaxHandler extends DefaultHandler {
-    private static Logger log = Logger.getLogger(OwlSaxHandler.class.getName());
+    private static final Logger log = Logger.getLogger(OwlSaxHandler.class.getName());
     private static final String OWL_NS = "http://www.w3.org/2002/07/owl#";
     private static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
     private static final String RDFS_NS = "http://www.w3.org/2000/01/rdf-schema#";

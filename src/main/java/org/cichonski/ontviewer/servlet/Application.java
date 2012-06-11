@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 final class Application {
     private static final Logger log = Logger.getLogger(Application.class.getName());
     private static final String ONT_DIR_LOC = "ontologies/";
+    private static final String SCHEMA_TEMPLATE = "templates/ont-view-full.vm";
     
     private static Application application;
     
@@ -31,11 +32,10 @@ final class Application {
             throw new ServletException("application is already initialized!");
         }
         try {
-        	application = new Application(ViewBuilder.buildViews(getOntDir(), contextPath), contextPath); 
+        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), SCHEMA_TEMPLATE, contextPath), contextPath); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);
         }
-       
     }
     
     public static Application getInstance() {
@@ -43,14 +43,14 @@ final class Application {
         return application;
     }
     
-    private static File getOntDir(){
-        File ontologyDir = null;
+    private static File getFile(String fileLoc){
+        File file = null;
         try {
-            ontologyDir = new File(Application.class.getClassLoader().getResource(ONT_DIR_LOC).toURI());
+            file = new File(Application.class.getClassLoader().getResource(fileLoc).toURI());
         } catch (URISyntaxException e){
             log.log(Level.SEVERE, "could not find ontologies for view generation", e);
         }
-        return ontologyDir;
+        return file;
     }
 
     // the map of all the views to display, keyed by the path
@@ -83,10 +83,12 @@ final class Application {
                 
                 // this will not generate the correct path. TODO: follow this advice: http://stackoverflow.com/a/523103
                 
-                
-                
                 PrintWriter out = response.getWriter();
-                out.println(views.get(path).getView()); //todo: add caching
+                View view = views.get(path);
+                if (view == null){
+                    throw new NullPointerException("can't find view for path: " + path);
+                }
+                out.println(view.getView()); //todo: add caching
             }catch (IOException e){
                 log.log(Level.WARNING, "error writing view page to response");
                 throw e; // let higher level servlet code deal with it

@@ -1,0 +1,58 @@
+/* styling a mix between scap.nist.gov and schema.org */
+@charset "utf-8";
+
+table.definition-table
+{
+margin: 1em 0 0 0;
+border: 1px solid #98A0A6;
+}
+.definition-table th
+{
+text-align: left;
+background: #C7CBCE;
+padding-left: 5px;
+}
+.definition-table td
+{
+padding: 0 5px 2px 5px;
+margin: 0;
+vertical-align: top;
+}
+.definition-table td p
+{
+padding: 0 0 .6em 0;
+margin: 0;
+}
+.definition-table td ul
+{
+padding-top: 0;
+margin-top: 0;
+}
+.definition-table tr.alt
+{
+background: #E9EAEB;
+}
+
+/* -- hierarchy -- */
+table.h, .h tr, .h td
+{
+border: none;
+margin: 0;
+padding: 0;
+border-collapse: collapse
+}
+.h .space
+{
+width: 20px
+}
+.h .bar
+{
+background-color: #000;
+width: 1px
+}
+.h .tc
+{
+text-indent: -21px;
+padding-left: 21px
+}
+

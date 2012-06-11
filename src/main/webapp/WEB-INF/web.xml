@@ -14,7 +14,8 @@
 
    <servlet-mapping>
     <servlet-name>OntologyViewerServlet</servlet-name>
-    <url-pattern>/*</url-pattern>
+    <!--  note: this is hardcoded in OntologyViewer, change there if you change here -->
+    <url-pattern>/vocabs/*</url-pattern>
   </servlet-mapping>
     
 </web-app>
