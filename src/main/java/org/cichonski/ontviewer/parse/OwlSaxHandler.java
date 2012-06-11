@@ -159,7 +159,7 @@ public class OwlSaxHandler extends DefaultHandler {
     	 */
     	
         /* TODO:
-         * 2. build all builders and add to both tree and cache
+         * 1. assemble tree structure, figure out what classes are root, maybe just all classes below owl:thing?
          */
     	
     	for (Property p : objectProperties){
