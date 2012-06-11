@@ -1,6 +1,5 @@
 package org.cichonski.ontviewer.servlet;
 
-import java.io.File;
 
 /**
  * Provides a schema.org like view into an ontology.

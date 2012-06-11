@@ -5,8 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,7 +53,6 @@ final class Application {
         return file;
     }
 
-    // the map of all the views to display, keyed by the path
     private final ViewContainer viewContainer;
     private final String contextPath;
     
