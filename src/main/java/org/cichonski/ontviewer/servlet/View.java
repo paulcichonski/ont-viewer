@@ -16,10 +16,10 @@ final class View {
 
     
     
-    public View(String view, String description, String fileName, String cleanName) {
+    public View(String view, String description, String path, String cleanName) {
         this.view = view;
         this.description = description;
-        this.path = genPath(fileName);
+        this.path = path;
         this.cleanName = cleanName;
     }
 
@@ -56,9 +56,6 @@ final class View {
         return cleanName;
     }
     
-    private String genPath(String fileName){
-        int index = fileName.lastIndexOf("."); //assuming there is not multiple file extensions (i.e., .owl.bak)
-        return "/" + fileName.substring(0, index);
-    }
+
 
 }

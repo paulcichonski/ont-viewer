@@ -40,7 +40,7 @@
     							<td class="tc" colspan=4><a href="../${class.getURI()}">${class.getLabel()}</a>: ${class.getDescritpion()}</td>
                             </tr>
 							
-							#macro ( recursive $e )     
+							#macro ( recurseChildren $e )     
 								#if( $e.getSubClasses().size() > 0 )
 									#foreach ($child in $e.getSubClasses() )
 										<tr>
@@ -50,9 +50,10 @@
 											<td>
 												<table class=h>
 													<tr>
-														<td class="tc" colspan=4><a href="../${child.getURI()}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
+														#set( $path = $pathBuilder.buildPagePath("$child.getLabel()") )
+														<td class="tc" colspan=4><a href="${path}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
 													</tr>
-													#recursive( $child ) 
+													#recurseChildren( $child ) 
                                                 </table>
                                             </td>
                                         </tr>
@@ -61,16 +62,13 @@
 
 								#end
 							#end
-							#recursive(${class})
-                			</tr>
+							## start the recursion
+							#recurseChildren(${class})
                 		</table>
     				</td>
-                </tr>
+           		</tr>
     		#end
-    			
-    
     	</table>
-	
 	</div>
 		
 	

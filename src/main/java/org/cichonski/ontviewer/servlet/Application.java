@@ -14,6 +14,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
+
 /**
  * Track application data.
  * @author Paul Cichonski
@@ -54,11 +56,11 @@ final class Application {
     }
 
     // the map of all the views to display, keyed by the path
-    private final Map<String, View> views;
+    private final ViewContainer viewContainer;
     private final String contextPath;
     
-    private Application(Map<String, View> views, String contextPath) {
-        this.views = views;
+    private Application(ViewContainer viewContainer, String contextPath) {
+        this.viewContainer = viewContainer;
         this.contextPath = contextPath;
     }
     
@@ -67,10 +69,10 @@ final class Application {
         if (path == null || path.isEmpty() || path.equals("/")){
             try {
                 PrintWriter out = response.getWriter();
-                if (views != null && !views.isEmpty()){
-                	out.println(ViewBuilder.buildViewIndex(Collections.unmodifiableMap(views), contextPath)); //todo: add caching
+                if (viewContainer.getIndex() != null && !viewContainer.getIndex().isEmpty()){
+                	out.println(viewContainer.getIndex()); //todo: add caching
                 } else {
-                	out.write("no views available");
+                	out.write("no index available");
                 }
             }catch (IOException e){
                 log.log(Level.WARNING, "error writing index page to response");
@@ -80,11 +82,8 @@ final class Application {
             // return view for individual page
             try {
                 
-                
-                // this will not generate the correct path. TODO: follow this advice: http://stackoverflow.com/a/523103
-                
                 PrintWriter out = response.getWriter();
-                View view = views.get(path);
+                View view = viewContainer.getViews().get(path);
                 if (view == null){
                     throw new NullPointerException("can't find view for path: " + path);
                 }
