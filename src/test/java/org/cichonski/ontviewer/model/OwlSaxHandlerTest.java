@@ -22,7 +22,9 @@ import org.cichonski.ontviewer.parse.OwlSaxHandler;
 
 public class OwlSaxHandlerTest extends TestCase {
 	private static final Map<String, OwlClass> expectedClasses = new HashMap<String, OwlClass>();
+	private static OwlClass expectedRoot = null;
 	// class URIs
+    private static final String OWL_THING = "http://www.w3.org/2002/07/owl#Thing";
 	private static final String BOTNET = "http://foo.org/vocabulary/indicators#Botnet";
 	private static final String ATTACK_PHASE = "http://foo.org/vocabulary/indicators#AttackPhase";
 	private static final String FILE = "http://foo.org/vocabulary/indicators#File";
@@ -89,6 +91,11 @@ public class OwlSaxHandlerTest extends TestCase {
 					indSubClasses, objPreds, Collections.singleton(testProp));
 			expectedClasses.put(INDICATOR, indicator);
 			
+			Set<OwlClass> rootSubClasses = new HashSet<OwlClass>();
+			rootSubClasses.add(indicator);
+			rootSubClasses.add(attackPhase);
+			expectedRoot = new OwlClassImpl(new URI(OWL_THING), "OWL Thing", "OWL Thing, the root of the tree", 
+					rootSubClasses, new HashSet<Property>(), new HashSet<Property>());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -153,9 +160,10 @@ public class OwlSaxHandlerTest extends TestCase {
             factory.setFeature("http://xml.org/sax/features/namespaces", true);
             factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
             final SAXParser parser = factory.newSAXParser();
-//            parser.parse(ont, handler);
+            parser.parse(ont, handler);
             
-            final Set<OwlClass> classTree = handler.getClassTree();
+            final OwlClass treeRoot = handler.getRoot();
+            testClasses(treeRoot, expectedRoot);
             
             //TODO: set up mock class tree, then test against this one.
 

@@ -35,9 +35,11 @@ public class OwlSaxHandler extends DefaultHandler {
     // all classes for easy access
     private final Map<URI, OwlClass> classCache = new HashMap<URI, OwlClass>();
     
-    // preserves the tree structure of the classes
-    private final Set<OwlClass> classTree = new TreeSet<OwlClass>(); 
+    // safegaurd calls until the end of processing
+    private boolean finished = false;
     
+    // only safe when finished=true
+    private OwlClass owlThing;
     
     // ***************************
     // stream state 
@@ -65,6 +67,13 @@ public class OwlSaxHandler extends DefaultHandler {
     private boolean property = false;
     
     public OwlSaxHandler() {
+    }
+    
+    @Override
+    public void startDocument() throws SAXException {
+    	super.startDocument();
+    	finished = false;
+    	owlThing = null;
     }
 
     
@@ -157,10 +166,7 @@ public class OwlSaxHandler extends DefaultHandler {
     	 * since each build() recursively calles build() on its subClasses, which are also in the classbuilders map.
     	 * So....if this causes performance issues add some sort of caching/memoization (it probably won't though).
     	 */
-    	
-        /* TODO:
-         * 1. assemble tree structure, figure out what classes are root, maybe just all classes below owl:thing?
-         */
+    	OwlClassBuilder owlThingBuilder = assembleOwlThingBuilder();
     	
     	for (Property p : objectProperties){
     		populateProperties(p, PropertyType.OBJECT);
@@ -169,13 +175,14 @@ public class OwlSaxHandler extends DefaultHandler {
     		populateProperties(p, PropertyType.DATA);
     	}
     	
-    	assembleSubClasses();
+    	assembleSubClasses(owlThingBuilder);
         
         for (OwlClassBuilder builder : classBuilders.values()){
             OwlClass owlClass = builder.build();
             classCache.put(owlClass.getURI(), owlClass);
-            
         }
+        owlThing = owlThingBuilder.build();
+        finished = true;
     }
     
 //***********************************
@@ -207,20 +214,18 @@ public class OwlSaxHandler extends DefaultHandler {
 	/**
 	 * should only be called after the document has been parsed, or on the
 	 * endDocument() method.
+	 * @param root - the root of the tree, aka the builder for OWL THING.
 	 */
-	private void assembleSubClasses() {
+	private void assembleSubClasses(OwlClassBuilder root) {
 		for (Map.Entry<URI, URI> entry : subClassMap.entrySet()) {
 			OwlClassBuilder subClass = classBuilders.get(entry.getKey());
 			OwlClassBuilder superClass = classBuilders.get(entry.getValue());
 			if (subClass != null && superClass != null) {
 				superClass.addSubClass(subClass);
 			} else {
-				try {
+				try { // need to handle the root specially, since it won't be in the map
 					if (entry.getValue().equals(new URI(OWL_THING))) {
-						// not supporting OWL Thing right now
-						log.log(Level.INFO,
-								"skipping OWL Thing superclass declaration from "
-										+ entry.getKey().toString());
+						root.addSubClass(subClass);
 					} else {
 						throw new NullPointerException("class not found");
 					}
@@ -229,6 +234,18 @@ public class OwlSaxHandler extends DefaultHandler {
 				}
 			}
 		}
+	}
+	
+	private OwlClassBuilder assembleOwlThingBuilder(){
+		OwlClassBuilder owlThingBuilder = new OwlClassBuilder();
+    	owlThingBuilder.setDescription("OWL Thing, the root of the tree");
+    	owlThingBuilder.setLabel("OWL Thing");
+    	try {
+    		owlThingBuilder.setUri(new URI(OWL_THING));
+    	} catch (URISyntaxException e){
+        	log.info("couldn't buld OWL THING URI");
+        }
+    	return owlThingBuilder;
 	}
     
     private void populateProperties(Property p, PropertyType type){
@@ -378,12 +395,26 @@ public class OwlSaxHandler extends DefaultHandler {
     
     
     public Map<URI, OwlClass> getClassCache() {
+    	verifyEndState();
         return Collections.unmodifiableMap(classCache);
     }
     
-    public Set<OwlClass> getClassTree() {
-    	 return Collections.unmodifiableSet(classTree);
+    /**
+     * REturns the class representing owl:thing
+     * @return
+     */
+    public OwlClass getRoot() {
+    	verifyEndState();
+    	return owlThing;
 	}
+    
+    private void verifyEndState(){
+    	if (!finished || owlThing == null){
+    		throw new IllegalStateException("handler not in good end state, can't provide data");
+    	} 
+
+    
+    }
 
 
 }
