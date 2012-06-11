@@ -165,9 +165,6 @@ public class OwlSaxHandlerTest extends TestCase {
             final OwlClass treeRoot = handler.getRoot();
             testClasses(treeRoot, expectedRoot);
             
-            //TODO: set up mock class tree, then test against this one.
-
-            
     	} catch (Exception e){
     		e.printStackTrace();
     		throw new Exception(e);
