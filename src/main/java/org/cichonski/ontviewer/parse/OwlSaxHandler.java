@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -190,8 +189,7 @@ public class OwlSaxHandler extends DefaultHandler {
 //***********************************
     private void startOwlClass(Attributes attributes){
         URI uri = resolveFullUriIdentifier(attributes);
-        OwlClassBuilder builder = new OwlClassBuilder();
-        builder.setUri(uri);
+        OwlClassBuilder builder = new OwlClassBuilder(uri);
         currentClassBuilder = builder;
         classBuilders.put(uri, builder);
     }
@@ -237,11 +235,11 @@ public class OwlSaxHandler extends DefaultHandler {
 	}
 	
 	private OwlClassBuilder assembleOwlThingBuilder(){
-		OwlClassBuilder owlThingBuilder = new OwlClassBuilder();
-    	owlThingBuilder.setDescription("OWL Thing, the root of the tree");
-    	owlThingBuilder.setLabel("OWL Thing");
-    	try {
-    		owlThingBuilder.setUri(new URI(OWL_THING));
+	    OwlClassBuilder owlThingBuilder = null;
+	    try {
+            owlThingBuilder = new OwlClassBuilder(new URI(OWL_THING));
+            owlThingBuilder.setDescription("OWL Thing, the root of the tree");
+            owlThingBuilder.setLabel("OWL Thing");
     	} catch (URISyntaxException e){
         	log.info("couldn't buld OWL THING URI");
         }

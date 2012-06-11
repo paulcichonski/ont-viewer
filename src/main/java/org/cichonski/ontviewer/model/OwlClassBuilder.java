@@ -10,14 +10,16 @@ import java.util.Set;
  *
  */
 public class OwlClassBuilder {
-    private URI uri;
+    // must be invariant...would screw up set equality computations.
+    private final URI uri;
     private String label;
     private String description;
     private Set<OwlClassBuilder> subClassBuilders;
     private Set<Property> objectProperties;
     private Set<Property> dataProperties;
     
-    public OwlClassBuilder() {
+    public OwlClassBuilder(URI uri) {
+        this.uri = uri;
     	subClassBuilders = new HashSet<OwlClassBuilder>();
         objectProperties = new HashSet<Property>();
         dataProperties = new HashSet<Property>();
@@ -61,10 +63,7 @@ public class OwlClassBuilder {
 		return uri;
 	}
     
-    public OwlClassBuilder setUri(URI uri) {
-        this.uri = uri;
-        return this;
-    }
+
 
     public OwlClassBuilder setLabel(String label) {
         this.label = label;
