@@ -69,5 +69,11 @@ public class PropertyBuilder {
         return this;
     }
     
+    @Override
+    public String toString() {
+    	// TODO Auto-generated method stub
+    	return uri.toString();
+    }
+    
     
 }

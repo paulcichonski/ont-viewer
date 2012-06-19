@@ -271,16 +271,22 @@ public class OwlSaxHandler extends DefaultHandler {
     }
     
     private void parseDomain(Attributes attributes){
-    	URI uri = resolveUriIdentifier(attributes);
-    	currentPropertyBuilder.addDomain(uri);
+    	if (attributes.getLength() == 0){
+    		log.warning("rdfs:domain statement for " + currentPropertyBuilder.toString() + " has no attributes, not supporting embedded domain declarations");
+    	} else {
+        	URI uri = resolveUriIdentifier(attributes);
+        	currentPropertyBuilder.addDomain(uri);
+    	}
     }
     
     private void parseRange(Attributes attributes){
-    	URI uri = resolveUriIdentifier(attributes);
-    	currentPropertyBuilder.addRange(uri);
+    	if (attributes.getLength() == 0){
+    		log.warning("rdfs:range statement for " + currentPropertyBuilder.toString() + " has no attributes, not supporting embedded range declarations");
+    	} else {
+    		URI uri = resolveUriIdentifier(attributes);
+    		currentPropertyBuilder.addRange(uri);
+    	}
     }
-    
-
     
 
     
@@ -311,7 +317,7 @@ public class OwlSaxHandler extends DefaultHandler {
 		try {
 			URI uri = new URI(resourceName);
 			if (uri.isAbsolute()){
-				return new URI(resourceName);
+				return uri;
 			}
 		} catch (URISyntaxException e) {
 			log.log(Level.WARNING, "class: " + resourceName, e);
@@ -369,8 +375,9 @@ public class OwlSaxHandler extends DefaultHandler {
 // centralize element inspection logic
 //***********************************
     
+	/** return true if parser hits owlClass that is NOT INSIDE a property declaration */
     private boolean isOwlClass(String uri, String localName, String qName){
-        return OWL_NS.equals(uri) && "class".equals(localName.toLowerCase());
+        return currentPropertyBuilder == null && OWL_NS.equals(uri) && "class".equals(localName.toLowerCase());
     }
     
     private boolean isUnknownElementInOwlClass(String uri, String localName, String qName){
