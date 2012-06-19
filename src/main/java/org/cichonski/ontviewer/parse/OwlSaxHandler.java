@@ -188,7 +188,7 @@ public class OwlSaxHandler extends DefaultHandler {
 // Methods for building out OwlClass and Predicates
 //***********************************
     private void startOwlClass(Attributes attributes){
-        URI uri = resolveFullUriIdentifier(attributes);
+        URI uri = resolveUriIdentifier(attributes);
         OwlClassBuilder builder = new OwlClassBuilder(uri);
         currentClassBuilder = builder;
         classBuilders.put(uri, builder);
@@ -205,7 +205,7 @@ public class OwlSaxHandler extends DefaultHandler {
 					subClassURI.toString()
 							+ " seems to declare two subclassOf relationships. This is not currently supported");
 		}
-    	URI superClassUri = resolveFullUriIdentifier(attributes);
+    	URI superClassUri = resolveUriIdentifier(attributes);
     	subClassMap.put(subClassURI, superClassUri); 
     }
     
@@ -264,19 +264,19 @@ public class OwlSaxHandler extends DefaultHandler {
 
     
     private void startProperty(Attributes attributes){
-    	URI uri = resolveFullUriIdentifier(attributes);
+    	URI uri = resolveUriIdentifier(attributes);
     	PropertyBuilder builder = new PropertyBuilder();
     	builder.setUri(uri);
     	currentPropertyBuilder = builder;
     }
     
     private void parseDomain(Attributes attributes){
-    	URI uri = resolveFullUriIdentifier(attributes);
+    	URI uri = resolveUriIdentifier(attributes);
     	currentPropertyBuilder.addDomain(uri);
     }
     
     private void parseRange(Attributes attributes){
-    	URI uri = resolveFullUriIdentifier(attributes);
+    	URI uri = resolveUriIdentifier(attributes);
     	currentPropertyBuilder.addRange(uri);
     }
     
@@ -285,43 +285,84 @@ public class OwlSaxHandler extends DefaultHandler {
 
     
     /**
-     * Logic modeled off of spec (http://www.w3.org/TR/REC-rdf-syntax/#section-Syntax-ID-xml-base).
+     * Will resolve URI identifier, returning the absolute URI.
      * @param attributes - the attributes that contain either the rdf:ID or rdf:about signifying the identifier of the resource.
      * @return
      */
-    //right now this is assuming resource identifiers are in the xml:base..
-    private URI resolveFullUriIdentifier(Attributes attributes){
-        if (xmlBase == null || xmlBase.isEmpty()){
+    private URI resolveUriIdentifier(Attributes attributes){
+		URI uri = resolveFullURI(attributes);
+		if (uri == null) {
+			uri = resolveRelativeURI(attributes);
+		}
+		if (uri == null){
+			// if the identifier isn't created, the app is dead
+			throw new RuntimeException("could not build a URI for the resource");
+		}
+		return uri;
+    }
+
+    /**
+     * Builds out the URI assuming the reference is fully-qualified (i.e., has scheme component). 
+     * @param attributes
+     * @return null if the URI is not fully qualified.
+     */
+	private URI resolveFullURI(Attributes attributes){
+		String resourceName = resolveUriResourceName(attributes, false);
+		try {
+			URI uri = new URI(resourceName);
+			if (uri.isAbsolute()){
+				return new URI(resourceName);
+			}
+		} catch (URISyntaxException e) {
+			log.log(Level.WARNING, "class: " + resourceName, e);
+		}
+		return null;
+	}
+
+	/**
+	 * Build out the URI assuming the reference is relative.
+	 * @param attributes
+	 * @return null if the URI could not be built/found.
+	 */
+	 //right now this is assuming resource identifiers are in the xml:base..
+	private URI resolveRelativeURI(Attributes attributes){
+    	if (xmlBase == null || xmlBase.isEmpty()){
             throw new RuntimeException("no xml:base specified");
         }
-        String resourceName = attributes.getValue(RDF_NS, "ID");  // rdf:ID gives a relative URI index without the #
-        try {
-            if (resourceName != null && !resourceName.isEmpty()){ 
-                String fullUri = xmlBase + "#" + resourceName;
-                return new URI(fullUri);
-            } 
-            //assume rdf:about, relative URI with prepended #
-            resourceName = attributes.getValue(RDF_NS, "about");
-            if (resourceName != null && !resourceName.isEmpty()){ 
-                String fullUri = xmlBase + resourceName;
-                return new URI(fullUri);
-            } 
-            // assume rdf:resource, relative URI with prepended #
-            resourceName = attributes.getValue(RDF_NS, "resource");
-            if (resourceName != null && !resourceName.isEmpty()){ 
-            	if (resourceName.startsWith("#")){
-                    String fullUri = xmlBase + resourceName;
-                    return new URI(fullUri);
-            	} else {
-            		//assume full URI alread (i.e., xsd datatype)
-            		return new URI(resourceName);
-            	}
-            } 
-        } catch (URISyntaxException e){
-            log.log(Level.WARNING, "class: " + resourceName, e);
+		String resourceName = resolveUriResourceName(attributes, true);
+		try {
+			String fullUri = xmlBase + resourceName;
+			return new URI(fullUri);
+		} catch (URISyntaxException e) {
+			log.log(Level.WARNING, "class: " + resourceName, e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Iterates through the possible ways the URI identifier can be expressed
+	 * and returns it. Logic modeled off of spec
+	 * (http://www.w3.org/TR/REC-rdf-syntax/#section-Syntax-ID-xml-base).
+	 * 
+	 * @param attributes
+	 * @param prependPound - should be true if you think URI is relative
+	 * @return null if no match is found
+	 */
+	private String resolveUriResourceName(Attributes attributes, boolean prependPound){
+		String resourceName = attributes.getValue(RDF_NS, "ID");  // rdf:ID gives a relative URI index without the #
+        if (resourceName != null && !resourceName.isEmpty()){ 
+            return prependPound ? "#" + resourceName : resourceName;
+        } 
+        resourceName = attributes.getValue(RDF_NS, "about"); // rdf:about will already have prepended pound if it is relative
+        if (resourceName != null && !resourceName.isEmpty()){ 
+        	 return resourceName;
+        } 
+        resourceName = attributes.getValue(RDF_NS, "resource"); // rdf:resource will already have prepended pound if it is relative
+        if (resourceName != null && !resourceName.isEmpty()){ 
+        	 return resourceName;
         }
-        throw new RuntimeException("could not build URI"); // if it didn't work, everything else is dead
-    }
+        return null;
+	}
     
 
 //***********************************
