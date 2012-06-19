@@ -41,17 +41,16 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
 
     @Override
     public String getLabel() {
-        return label;
+        return label != null ? label : "";
     }
 
     @Override
     public String getDescritpion() {
-        return description;
+        return description != null ? description : "";
     }
 
     @Override
     public Set<OwlClass> getSubClasses() {
-        // TODO Auto-generated method stub
         return Collections.unmodifiableSet(subClasses);
     }
 

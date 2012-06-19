@@ -22,11 +22,11 @@ public class PropertyImpl implements Property, Comparable<PropertyImpl> {
 	}
 	
 	public String getDescription() {
-		return description;
+		return description != null ? description : "";
 	}
 	
 	public String getLabel() {
-		return label;
+		return label != null ? label : "";
 	}
 	public URI getURI() {
 		return uri;

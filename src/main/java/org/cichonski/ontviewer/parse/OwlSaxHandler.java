@@ -132,6 +132,8 @@ public class OwlSaxHandler extends DefaultHandler {
         if (isOwlClass(uri, localName, qName)){
             currentClasses.pop();
             if (currentClasses.isEmpty()){
+            	// done with the current class
+            	finalizeOwlClass();
                 currentClassBuilder = null;  
             }
         } else if (isUnknownElementInOwlClass(uri, localName, qName)){
@@ -194,18 +196,28 @@ public class OwlSaxHandler extends DefaultHandler {
         classBuilders.put(uri, builder);
     }
     
+    private void finalizeOwlClass(){
+    	// if current class did not declare a superclass, assume owlThing.
+    	final URI subClassURI = currentClassBuilder.getUri();
+    	if (!subClassMap.containsKey(subClassURI)){
+    		log.info(subClassURI.toString() + " did not have a superclass declared, assuming OWL Thing");
+    		subClassMap.put(subClassURI, URI.create(OWL_THING)); //avoid URI exception
+    	}
+    	
+    }
+    
     private void parseSubClass(Attributes attributes){
     	// **** !!!! Important: This assumes that a class is only a subClass of one other class !!! ****
     	// **** !!!! While not valid according to the spec, we shouldn't be seeing any ontologies that break this rule !!!! ****
     	
     	// the class being built is the actual subclass
-		URI subClassURI = currentClassBuilder.getUri();
+		final URI subClassURI = currentClassBuilder.getUri();
     	if (subClassMap.containsKey(subClassURI)) {
 			throw new RuntimeException(
 					subClassURI.toString()
 							+ " seems to declare two subclassOf relationships. This is not currently supported");
 		}
-    	URI superClassUri = resolveUriIdentifier(attributes);
+    	final URI superClassUri = resolveUriIdentifier(attributes);
     	subClassMap.put(subClassURI, superClassUri); 
     }
     
