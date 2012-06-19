@@ -2,6 +2,7 @@ package org.cichonski.ontviewer.model;
 
 import java.net.URI;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,23 +26,44 @@ public class OwlClassBuilder {
         dataProperties = new HashSet<Property>();
     }
     
-    /**
-     * 
-     * @return
-     * @throws IllegalStateException if uri is null
-     */
-    public OwlClass build(){
-        inspect();
-        Set<OwlClass> subClasses = buildSubClasses();
-        return new OwlClassImpl(uri, label, description, subClasses, objectProperties, dataProperties);
+	/**
+	 * NOTE: This not threadsafe (map will be altered...writes-only, no
+	 * deletes), clients should either pass inherently threadsafe map if this is running in multiple threads.
+	 * 
+	 * @param classMemoizer - cache of pre-built owlClasses, the stored owlClass will be used
+	 *        if current builder is in the map. This is required to allow us to
+	 *        build both subClasses and superClasses without going into an
+	 *        infinite loop; it also may prevent duplicate builds if cache is
+	 *        shared accross multiple root level classes.
+	 * @return
+	 * @throws IllegalStateException
+	 *             - if uri is null
+	 * @throws NullPointerException
+	 *             - if cache is null
+	 */
+    public OwlClass build(Map<OwlClassBuilder, OwlClass> classMemoizer){
+    	if (classMemoizer == null){
+    		throw new NullPointerException("cache cannot be null");
+    	}
+    	if (classMemoizer.containsKey(this)){
+    		return classMemoizer.get(this);
+    	} else {
+            inspect();
+            final Set<OwlClass> subClasses = buildSubClasses(classMemoizer);
+            final OwlClass owlClass = new OwlClassImpl(uri, label, description, subClasses, objectProperties, dataProperties);
+            for (OwlClass subClass : owlClass.getSubClasses()){
+            	((OwlClassImpl)subClass).setSuperClass(owlClass);
+            }
+            classMemoizer.put(this, owlClass);
+            return owlClass;
+    	}
     }
     
-    private Set<OwlClass> buildSubClasses(){
-    	/* this is going to create a lot of duplication (when subClasses are called build() independently, 
-    	 * may want to add some sort of caching/memoization if performance is an issue */
-    	Set<OwlClass> subClasses = new HashSet<OwlClass>();
+    private Set<OwlClass> buildSubClasses(Map<OwlClassBuilder, OwlClass> classMemoizer){
+    	final Set<OwlClass> subClasses = new HashSet<OwlClass>();
     	for (OwlClassBuilder b : subClassBuilders){
-    		subClasses.add(b.build());
+    		OwlClass c = b.build(classMemoizer);
+    		subClasses.add(c);
     	}
     	return subClasses;
     }
@@ -96,6 +118,8 @@ public class OwlClassBuilder {
         }
         return this;
     }
+    
+
     
     @Override
     public boolean equals(Object obj) {

@@ -178,11 +178,12 @@ public class OwlSaxHandler extends DefaultHandler {
     	
     	assembleSubClasses(owlThingBuilder);
         
+    	final Map<OwlClassBuilder, OwlClass> classMemoizer = new HashMap<OwlClassBuilder, OwlClass>();
         for (OwlClassBuilder builder : classBuilders.values()){
-            OwlClass owlClass = builder.build();
+            OwlClass owlClass = builder.build(classMemoizer);
             classCache.put(owlClass.getURI(), owlClass);
         }
-        owlThing = owlThingBuilder.build();
+        owlThing = owlThingBuilder.build(classMemoizer);
         finished = true;
     }
     

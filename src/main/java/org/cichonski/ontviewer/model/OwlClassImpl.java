@@ -9,13 +9,15 @@ import java.util.Set;
  * @author Paul Cichonski
  *
  */
-public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
+public final class OwlClassImpl implements OwlClass, Comparable<OwlClassImpl> {
     private final URI uri;
     private final String label;
     private final String description;
     private final Set<OwlClass> subClasses;
     private final Set<Property> objectProperties;
     private final Set<Property> dataProperties;
+    
+    private OwlClass superClass;
     
 
     // only builder and tests should build
@@ -33,6 +35,12 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
         this.objectProperties = objectProperties;
         this.dataProperties = dataProperties;
     }
+    
+    void setSuperClass(OwlClass superClass) {
+    	// need to allow this to be set after construction or infinite loop results from building subClasses and superClasses
+    	// a bit ugly.
+		this.superClass = superClass;
+	}
 
     @Override
     public URI getURI() {
@@ -62,6 +70,11 @@ public class OwlClassImpl  implements OwlClass, Comparable<OwlClassImpl> {
     @Override
     public Set<Property> getDataTypeProperty() {
         return Collections.unmodifiableSet(dataProperties);
+    }
+    
+    @Override
+    public OwlClass getSuperClass() {
+    	return superClass;
     }
     
     @Override

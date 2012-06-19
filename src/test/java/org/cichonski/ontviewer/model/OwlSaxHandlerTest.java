@@ -63,6 +63,7 @@ public class OwlSaxHandlerTest extends TestCase {
 					new URI(CALLS_BACK_TO),  new HashSet<URI>(Collections.singleton(new URI(INTERNAL_INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(EXTERNAL_INDICATOR))));
 			final OwlClass internalIndicator = new OwlClassImpl(new URI(INTERNAL_INDICATOR), "InternalIndicator", "Indicators that are typically found on the system(s) that are the target of the incident.", 
 					internalIndSubClasses, Collections.singleton(callsBackTo), new HashSet<Property>());
+			((OwlClassImpl)file).setSuperClass(internalIndicator);
 			expectedClasses.put(INTERNAL_INDICATOR, internalIndicator);
 			
 			
@@ -72,6 +73,7 @@ public class OwlSaxHandlerTest extends TestCase {
 					new URI(SERVES_FILE),  new HashSet<URI>(Collections.singleton(new URI(EXTERNAL_INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(FILE))));
 			final OwlClass externalIndicator = new OwlClassImpl(new URI(EXTERNAL_INDICATOR), "ExternalIndicator", "Indicators that identify something that is participating in the incident in some way, but is not physically located on the targeted system(s). These indicators are typically represented by an IP address, DNS name, or URL.", 
 					externalIndSubClasses, Collections.singleton(servesFile), new HashSet<Property>());
+			((OwlClassImpl)botnet).setSuperClass(externalIndicator);
 			expectedClasses.put(EXTERNAL_INDICATOR, externalIndicator);
 			
 			/* indicator class, has internal and external indicators as subClasses */
@@ -89,6 +91,8 @@ public class OwlSaxHandlerTest extends TestCase {
 					new URI(TEST_PROP),  new HashSet<URI>(Collections.singleton(new URI(INDICATOR))),  new HashSet<URI>(Collections.singleton(new URI(DATE_TIME))));
 			final OwlClass indicator = new OwlClassImpl(new URI(INDICATOR), "Indicator", "A sign that an incident may have occurred or may be currently occurring. (source: NIST SP 800-61 rev.1). ", 
 					indSubClasses, objPreds, Collections.singleton(testProp));
+			((OwlClassImpl)internalIndicator).setSuperClass(indicator);
+			((OwlClassImpl)externalIndicator).setSuperClass(indicator);
 			expectedClasses.put(INDICATOR, indicator);
 			
 			Set<OwlClass> rootSubClasses = new HashSet<OwlClass>();
@@ -96,6 +100,8 @@ public class OwlSaxHandlerTest extends TestCase {
 			rootSubClasses.add(attackPhase);
 			expectedRoot = new OwlClassImpl(new URI(OWL_THING), "OWL Thing", "OWL Thing, the root of the tree", 
 					rootSubClasses, new HashSet<Property>(), new HashSet<Property>());
+			((OwlClassImpl)attackPhase).setSuperClass(expectedRoot);
+			((OwlClassImpl)indicator).setSuperClass(expectedRoot);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -137,7 +143,7 @@ public class OwlSaxHandlerTest extends TestCase {
             for (Map.Entry<URI, OwlClass> entry : classCache.entrySet()){
             	final OwlClass owlClass = entry.getValue();
             	final OwlClass expectedClass = expectedClasses.get(entry.getKey().toString());
-            	testClasses(owlClass, expectedClass);
+            	testClasses(owlClass, expectedClass, true);
             }
             
     	} catch (Exception e){
@@ -163,7 +169,7 @@ public class OwlSaxHandlerTest extends TestCase {
             parser.parse(ont, handler);
             
             final OwlClass treeRoot = handler.getRoot();
-            testClasses(treeRoot, expectedRoot);
+            testClasses(treeRoot, expectedRoot, true);
             
     	} catch (Exception e){
     		e.printStackTrace();
@@ -174,7 +180,7 @@ public class OwlSaxHandlerTest extends TestCase {
     }
     
     
-    private void testClasses(OwlClass owlClass, OwlClass expectedClass){
+    private void testClasses(OwlClass owlClass, OwlClass expectedClass, boolean testSubClasses){
     	System.out.println("testing generated class: " + owlClass);
     	assertNotNull(owlClass);
     	assertNotNull(expectedClass);
@@ -191,14 +197,23 @@ public class OwlSaxHandlerTest extends TestCase {
     	testPredicates(owlClass.getObjectProperties(), expectedClass.getObjectProperties());
     	
     	assertEquals(owlClass.getSubClasses().size(), expectedClass.getSubClasses().size());
-    	// may test a class more than once, but that is fine
-    	final Set<OwlClass> subClasses = new TreeSet<OwlClass>(owlClass.getSubClasses()); // ensure correct order
-    	final Iterator<OwlClass> subClassIter = subClasses.iterator();
-    	final Set<OwlClass> expectedSubClasses = new TreeSet<OwlClass>(expectedClass.getSubClasses());
-    	final Iterator<OwlClass> expectedSubClassIter = expectedSubClasses.iterator();
-    	while (expectedSubClassIter.hasNext()) {
-    		// already ensured they are the same size, 
-    		testClasses(subClassIter.next(), expectedSubClassIter.next());
+    	
+    	if (testSubClasses){
+	    	// may test a class more than once, but that is fine
+	    	final Set<OwlClass> subClasses = new TreeSet<OwlClass>(owlClass.getSubClasses()); // ensure correct order
+	    	final Iterator<OwlClass> subClassIter = subClasses.iterator();
+	    	final Set<OwlClass> expectedSubClasses = new TreeSet<OwlClass>(expectedClass.getSubClasses());
+	    	final Iterator<OwlClass> expectedSubClassIter = expectedSubClasses.iterator();
+	    	while (expectedSubClassIter.hasNext()) {
+	    		// already ensured they are the same size, 
+	    		testClasses(subClassIter.next(), expectedSubClassIter.next(), true);
+	    	}
+    	}
+    	
+    	// test superClasses
+    	assertEquals(owlClass.getSuperClass(), expectedClass.getSuperClass());
+    	if (owlClass.getSuperClass() != null){
+    		testClasses(owlClass.getSuperClass(), expectedClass.getSuperClass(), false);
     	}
     }
     
