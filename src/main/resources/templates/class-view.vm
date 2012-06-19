@@ -1,15 +1,15 @@
 #macro( printProperties $properties )
-	#foreach($property in $properties)
+	#foreach( $property in $properties )
 		
 		<tr><th class="prop-nam" scope="row">
 			<code>${property.getLabel()}</code></th>
-			#foreach($classURI in $property.getRanges())
-				#set($first = true)
+			#foreach( $classURI in $property.getRanges() )
+				#set( $first = true )
 				<td class="prop-ect">
 					#if( !$first )
 						,
 					#else
-						#set($first = false)
+						#set( $first = false )
 					#end
 					${classURI}
 				</td>
@@ -34,6 +34,8 @@
 		#recursivelyPrintSuperClasses( $class )
     </h1>
 #end
+
+
 
 
 ## Velocity template for generating a schema.org-like view of an ontology.
@@ -74,8 +76,11 @@
         </table>
     
     	<h3>More specific types</h3>
-    	<ul>
-    
+		<ul>
+			#foreach( $subClass in $class.getSubClasses() )
+				#set( $path = $pathBuilder.buildPagePath("$subClass.getLabel()") )
+                <li><a href="${path}">${subClass.getLabel()}</a></li>
+			#end
     	</ul>
     		
     </div>

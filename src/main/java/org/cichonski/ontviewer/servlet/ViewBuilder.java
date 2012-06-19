@@ -180,11 +180,9 @@ public final class ViewBuilder {
 	/** path builder for servlet paths */
 	public static class PathBuilder{
 	    private final String localContextPath;
-	    private final StringBuilder builder;
 	    
 	    private PathBuilder(String localContextPath) {
             this.localContextPath = localContextPath;
-            builder = new StringBuilder();
         }
 	    
 	    /**
@@ -193,9 +191,7 @@ public final class ViewBuilder {
 	     * @return
 	     */
 	    public String buildPagePath(String classLabel){
-	        if (builder.length() > 0){
-	            builder.setLength(0);
-	        }
+	    	final StringBuilder builder = new StringBuilder();
 	        builder.append(localContextPath).append("/");
 	        builder.append(StringUtils.deleteWhitespace(classLabel));
 	        return builder.toString();
@@ -205,9 +201,7 @@ public final class ViewBuilder {
 	     * Will build the equivalent representation as buildPagePath(), but without the local context, since servlet will not provide that when serving a request.
 	     */
         public String buildKeyedPath(String classLabel) {
-            if (builder.length() > 0) {
-                builder.setLength(0);
-            }
+        	final StringBuilder builder = new StringBuilder();
             builder.append("/").append(StringUtils.deleteWhitespace(classLabel));
             return builder.toString();
         }
