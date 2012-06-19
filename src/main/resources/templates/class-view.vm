@@ -1,4 +1,4 @@
-#macro ( printProperties $properties )
+#macro( printProperties $properties )
 	#foreach($property in $properties)
 		
 		<tr><th class="prop-nam" scope="row">
@@ -17,6 +17,22 @@
 			<td class="prop-desc">${property.getDescription()}</td>
 		</tr>
 	#end
+#end
+
+#macro( recursivelyPrintSuperClasses $class )
+	#if( $class )
+		#recursivelyPrintSuperClasses( $class.getSuperClass() )
+		#set( $path = $pathBuilder.buildPagePath("$class.getLabel()") )
+        <a href="${path}">${class.getLabel()}</a>
+		&gt;
+	#end
+#end
+	
+
+#macro( printPageTitle $class )
+	<h1 class="page-title">
+		#recursivelyPrintSuperClasses( $class )
+    </h1>
 #end
 
 
@@ -43,11 +59,9 @@
     #set( $path = $pathBuilder.buildPagePath("$class.getLabel()") )
     
     <div id="content" class="col1">
-    	<h1 class="page-title">
-    		<a href=Thing>Thing</a>
-    		&gt;
-    		<a href=${path}>${class.getLabel()}</a>
-    	</h1>
+
+		#printPageTitle( $class )
+		
     	${class.getDescritpion()}
     	<table cellspacing="3" class="definition-table">
     		<thead><tr><th>Property</th><th>Expected Type</th><th>Description</th></tr></thead>
