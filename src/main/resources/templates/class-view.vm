@@ -1,0 +1,71 @@
+#macro ( printProperties $properties )
+	#foreach($property in $properties)
+		
+		<tr><th class="prop-nam" scope="row">
+			<code>${property.getLabel()}</code></th>
+			#foreach($classURI in $property.getRanges())
+				#set($first = true)
+				<td class="prop-ect">
+					#if( !$first )
+						,
+					#else
+						#set($first = false)
+					#end
+					${classURI}
+				</td>
+			#end
+			<td class="prop-desc">${property.getDescription()}</td>
+		</tr>
+	#end
+#end
+
+
+## Velocity template for generating a schema.org-like view of an ontology.
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- ======================================== -->
+<!-- =     GENERATED FILE! DO NOT EDIT!     = -->
+<!-- ======================================== -->
+<!-- page style is modeled off of the http://schema.org/docs/full.html taxonomy view -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>Class View</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="robots" content="" />
+	<link rel="stylesheet" type="text/css" href="../css/default.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="../css/schema.css" media="all"/>
+</head>
+<body>
+
+    <div id="header"><h1>Security Automation Controlled Vocabularies / Schemas</h1></div>
+    #set( $path = $pathBuilder.buildPagePath("$class.getLabel()") )
+    
+    <div id="content" class="col1">
+    	<h1 class="page-title">
+    		<a href=Thing>Thing</a>
+    		&gt;
+    		<a href=${path}>${class.getLabel()}</a>
+    	</h1>
+    	${class.getDescritpion()}
+    	<table cellspacing="3" class="definition-table">
+    		<thead><tr><th>Property</th><th>Expected Type</th><th>Description</th></tr></thead>
+            <tbody class="supertype">
+				##Not currently differentiating between dataType and ObjectType predicates, not sure if it is useful.
+				##TODO: translate objectProperty URIs into resolvable links pointing into their class definitions.
+    			#printProperties($class.getObjectProperties())
+    			#printProperties($class.getDataTypeProperty())
+            </tbody>
+        </table>
+    
+    	<h3>More specific types</h3>
+    	<ul>
+    
+    	</ul>
+    		
+    </div>
+		
+	
+</body>
+</html>

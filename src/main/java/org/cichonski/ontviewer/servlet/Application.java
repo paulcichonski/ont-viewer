@@ -23,6 +23,7 @@ final class Application {
     private static final Logger log = Logger.getLogger(Application.class.getName());
     private static final String ONT_DIR_LOC = "ontologies/";
     private static final String SCHEMA_TEMPLATE = "templates/ont-view-full.vm";
+    private static final String CLASS_TEMPLATE = "templates/class-view.vm";
     
     private static Application application;
     
@@ -32,7 +33,7 @@ final class Application {
             throw new ServletException("application is already initialized!");
         }
         try {
-        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), SCHEMA_TEMPLATE, contextPath), contextPath); 
+        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), SCHEMA_TEMPLATE, CLASS_TEMPLATE, contextPath), contextPath); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);
         }

@@ -34,13 +34,15 @@ public final class ViewBuilder {
     private static final String DEFAULT_OUTPUT_ENCODING = "UTF-8";
 
     /**
-	 * Helper method to build out views for a set of ontologies found in the specified directory.
-	 * @param ontologyDirectory
-	 * @param contextPath
-	 * @return Map<String, View> - Key = view path, Value = actual view.
-	 * @throws FileNotFoundException - if the ontology directory is invalid.
-	 */
-	public static ViewContainer buildViews(File ontologyDirectory, String fullSchemaTemplateLoc, String contextPath) throws FileNotFoundException{
+     * Helper method to build out views for a set of ontologies found in the specified directory.
+     * @param ontologyDirectory - directory containing the ontologies
+     * @param fullSchemaTemplateLoc - velocity template for displaying full schema
+     * @param classTemplateLoc - velocity template for displaying individual class
+     * @param contextPath - inital context path that should be used when constructing URLs.
+     * @return
+     * @throws FileNotFoundException - if any files (ontologies or templates) are not found.
+     */
+	public static ViewContainer buildViews(File ontologyDirectory, String fullSchemaTemplateLoc, String classTemplateLoc, String contextPath) throws FileNotFoundException{
 	    initVelocity();
 		final Map<String, View> views = new HashMap<String, View>();
 		final Map<String, View> rootViews = new HashMap<String, View>();
@@ -56,7 +58,7 @@ public final class ViewBuilder {
                 final View rootView = new View(w.toString(), "a test description", genPath(ont.getName()), ont.getName());
                 views.put(rootView.getPath(), rootView);
                 rootViews.put(rootView.getPath(), rootView);
-                views.putAll(generateClassViews(handler.getClassCache(), pathBuilder));
+                views.putAll(generateClassViews(handler.getClassCache(), classTemplateLoc, pathBuilder));
             }
         } else {
         	throw new FileNotFoundException("could not find ontology directory");
@@ -74,17 +76,26 @@ public final class ViewBuilder {
         return "/" + fileName.substring(0, index);
     }
 	
-	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, PathBuilder pathBuilder) {
+	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, String classTemplateLoc, PathBuilder pathBuilder) {
 	   
 	    final Map<String, View> views = new HashMap<String, View>();
 	    for (OwlClass owlClass : classes.values()){
-	        String path = pathBuilder.buildKeyedPath(owlClass.getLabel());
-	        final View view = new View(owlClass.getLabel(), owlClass.getDescritpion(), path, owlClass.getLabel());
-	        views.put(path, view);
+	        final View view = generateClassView(owlClass, classTemplateLoc, pathBuilder);
+	        views.put(view.getPath(), view);
 	    }
 	    
 	    return views;
     }
+	
+	private static View generateClassView(OwlClass owlClass, String classTemplateLoc, PathBuilder pathBuilder){
+		final VelocityContext context = new VelocityContext();
+        context.put("class", owlClass);
+        context.put("pathBuilder", pathBuilder);
+        final StringWriter w = new StringWriter();
+        Velocity.mergeTemplate(classTemplateLoc, DEFAULT_OUTPUT_ENCODING, context, w);
+        final String path = pathBuilder.buildKeyedPath(owlClass.getLabel());
+        return new View(w.toString(), "a test class description", path, owlClass.getLabel());
+	}
 
     private static void initVelocity(){
 	    Properties p = new Properties();
