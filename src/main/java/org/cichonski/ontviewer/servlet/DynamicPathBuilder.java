@@ -22,7 +22,12 @@ public final class DynamicPathBuilder implements PathBuilder {
     
     DynamicPathBuilder(String servletPath) {
         this.servletPath = servletPath;
-        this.currentPath = "";
+        reset();
+    }
+    
+    private void reset(){
+        this.currentPath = servletPath;
+        this.pathSansServletPath = "";
     }
     
     @Override
@@ -91,8 +96,7 @@ public final class DynamicPathBuilder implements PathBuilder {
             builder.insert(0, servletPath);
             currentPath = builder.toString();
         } else {
-            currentPath = servletPath;
-            pathSansServletPath = "";
+            reset();
         }
     }
     

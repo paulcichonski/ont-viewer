@@ -11,13 +11,11 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpUtils;
-import javax.xml.ws.http.HTTPException;
 
 import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
 
 /**
- * Track application data.
+ * Manages application data.
  * @author Paul Cichonski
  *
  */
@@ -25,9 +23,14 @@ final class Application {
     private static final Logger log = Logger.getLogger(Application.class.getName());
     private static final String ONT_DIR_LOC = "ontologies/";
 
-    
+    // this class is a singleton
     private static Application application;
     
+    /**
+     * Call during Servlet initialization to initialize application state.
+     * @param contextPath
+     * @throws ServletException
+     */
     public static void initializeApplication(String contextPath) throws ServletException {
         if (application != null) {
             // if servlets are being pooled then this logic will need to change, don't throw exception
@@ -35,12 +38,15 @@ final class Application {
         }
         try {
             PathBuilder pathBuilder = new DynamicPathBuilder(contextPath);
-        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder), contextPath); 
+        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder)); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);
         }
     }
     
+    /**
+     * @return - the application instance for serving pages.
+     */
     public static Application getInstance() {
         assert application != null : "application must be initialized first!";
         return application;
@@ -57,46 +63,65 @@ final class Application {
     }
 
     private final ViewContainer viewContainer;
-    private final String contextPath;
     
-    private Application(ViewContainer viewContainer, String contextPath) {
+    private Application(ViewContainer viewContainer) {
         this.viewContainer = viewContainer;
-        this.contextPath = contextPath;
     }
     
+    /**
+     * Process the request and display the appropriate schema view.
+     * @param request
+     * @param response - will contain either the view or a 404 error.
+     * @throws IOException
+     */
     public void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String path = request.getPathInfo();
         if (path == null || path.isEmpty() || path.equals("/")){
-            try {
-                PrintWriter out = response.getWriter();
-                if (viewContainer.getIndex() != null && !viewContainer.getIndex().isEmpty()){
-                	out.println(viewContainer.getIndex()); //todo: add caching
-                } else {
-                	out.write("no index available");
-                }
-            }catch (IOException e){
-                log.log(Level.WARNING, "error writing index page to response");
-                throw e; // let higher level servlet code deal with it
-            }
+            serveIndex(response);
         } else {
-            // return view for individual page
-            try {
-                
-                PrintWriter out = response.getWriter();
-                View view = viewContainer.getViews().get(path);
-                if (view == null){
-                    throw new NullPointerException("can't find view for path: " + path);
-                }
-                out.println(view.getView()); //todo: add caching
-            }catch (IOException e){
-                log.log(Level.WARNING, "error writing view page to response");
-                throw e; // let higher level servlet code deal with it
-            } catch (NullPointerException e){
-                response.sendError(404, path + " not found");
-            }
+            servePage(path, response);
         }
     }
-
-
+    
+    /**
+     * will serve the index page displaying all schemas managed by this application.
+     * @param response
+     * @throws IOException
+     */
+    private void serveIndex(HttpServletResponse response) throws IOException{
+        try {
+            PrintWriter out = response.getWriter();
+            if (viewContainer.getIndex() != null && !viewContainer.getIndex().isEmpty()){
+                out.println(viewContainer.getIndex()); //todo: add caching
+            } else {
+                out.write("no index available");
+            }
+        }catch (IOException e){
+            log.log(Level.WARNING, "error writing index page to response");
+            throw e; // let higher level servlet code deal with it
+        }
+    }
+    
+    /**
+     * Serve an individual page.
+     * @param path - the path of the page to serve.
+     * @param response
+     * @throws IOException
+     */
+    private void servePage(String path, HttpServletResponse response) throws IOException{
+        try {
+            PrintWriter out = response.getWriter();
+            View view = viewContainer.getViews().get(path);
+            if (view == null){
+                throw new NullPointerException("can't find view for path: " + path);
+            }
+            out.println(view.getView()); //todo: add caching
+        }catch (IOException e){
+            log.log(Level.WARNING, "error writing view page to response");
+            throw e; // let higher level servlet code deal with it
+        } catch (NullPointerException e){
+            response.sendError(404, path + " not found");
+        }
+    }
 
 }

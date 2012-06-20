@@ -48,19 +48,14 @@ public final class ViewBuilder {
 		final Map<String, View> views = new HashMap<String, View>();
 		final Map<String, View> rootViews = new HashMap<String, View>();
         if (ontologyDirectory != null & ontologyDirectory.isDirectory()){
+            final Template schemaViewTemplate = RuntimeSingleton.getTemplate(SCHEMA_TEMPLATE, DEFAULT_OUTPUT_ENCODING);
             for (File ont : ontologyDirectory.listFiles()){
-                pathBuilder.pushLocalPath(stripExtensions(ont.getName()));
+                String ontologyName = stripExtensions(ont.getName());
+                pathBuilder.pushLocalPath(stripExtensions(ontologyName));
                 final OwlSaxHandler handler = parseOntology(ont);
-                final VelocityContext context = new VelocityContext();
-                context.put("root", handler.getRoot());
-                context.put("pathBuilder", pathBuilder);
-                final StringWriter w = new StringWriter();
-                Velocity.mergeTemplate(SCHEMA_TEMPLATE, DEFAULT_OUTPUT_ENCODING, context, w);
-                
-                //DO WORK --> THIS PATH GEN SHOULD BE HANDLED BY PATH BUILDER
-                final View rootView = new View(w.toString(), "a test description", "/" + stripExtensions(ont.getName()), ont.getName());
-                views.put(rootView.getPath(), rootView);
-                rootViews.put(rootView.getPath(), rootView);
+                final View fullSchemaView = generateSchemaView(schemaViewTemplate, ontologyName, handler.getRoot(), pathBuilder);
+                views.put(fullSchemaView.getPath(), fullSchemaView);
+                rootViews.put(fullSchemaView.getPath(), fullSchemaView);
                 views.putAll(generateClassViews(handler.getClassCache(), pathBuilder));
                 pathBuilder.popLocalPath();
             }
@@ -78,6 +73,16 @@ public final class ViewBuilder {
             index = fileName.lastIndexOf("."); 
         }
         return fileName;
+    }
+    
+    private static View generateSchemaView(Template template, String ontologyName, OwlClass root, PathBuilder pathBuilder){
+        final VelocityContext context = new VelocityContext();
+        context.put("root", root);
+        context.put("pathBuilder", pathBuilder);
+        final StringWriter w = new StringWriter();
+        template.merge(context, w);
+        String schemaViewPath = "/" + ontologyName; //view assumption is hardcoded here, assuming path is directly after servlet mapping.
+        return new View(w.toString(), "a test description", schemaViewPath, ontologyName);
     }
 	
 	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, PathBuilder pathBuilder) {
