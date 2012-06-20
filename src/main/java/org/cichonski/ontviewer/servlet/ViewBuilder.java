@@ -16,9 +16,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.apache.velocity.runtime.RuntimeSingleton;
 import org.cichonski.ontviewer.model.OwlClass;
 import org.cichonski.ontviewer.parse.OwlSaxHandler;
 import org.xml.sax.SAXException;
@@ -32,68 +33,64 @@ public final class ViewBuilder {
 // eventually may want to use this to build out static views for caching to disk.
     private static final Logger log = Logger.getLogger(ViewBuilder.class.getName());
     private static final String DEFAULT_OUTPUT_ENCODING = "UTF-8";
+    private static final String SCHEMA_TEMPLATE = "templates/ont-view-full.vm";
+    private static final String CLASS_TEMPLATE = "templates/class-view.vm";
 
     /**
      * Helper method to build out views for a set of ontologies found in the specified directory.
      * @param ontologyDirectory - directory containing the ontologies
-     * @param fullSchemaTemplateLoc - velocity template for displaying full schema
-     * @param classTemplateLoc - velocity template for displaying individual class
      * @param contextPath - inital context path that should be used when constructing URLs.
      * @return
      * @throws FileNotFoundException - if any files (ontologies or templates) are not found.
      */
-	public static ViewContainer buildViews(File ontologyDirectory, String fullSchemaTemplateLoc, String classTemplateLoc, String contextPath) throws FileNotFoundException{
+	public static ViewContainer buildViews(File ontologyDirectory, PathBuilder pathBuilder) throws FileNotFoundException{
 	    initVelocity();
 		final Map<String, View> views = new HashMap<String, View>();
 		final Map<String, View> rootViews = new HashMap<String, View>();
-		final PathBuilder pathBuilder = new PathBuilder(contextPath);
         if (ontologyDirectory != null & ontologyDirectory.isDirectory()){
             for (File ont : ontologyDirectory.listFiles()){
+                pathBuilder.pushLocalPath(stripExtension(ont.getName()));
                 final OwlSaxHandler handler = parseOntology(ont);
                 final VelocityContext context = new VelocityContext();
                 context.put("root", handler.getRoot());
                 context.put("pathBuilder", pathBuilder);
                 final StringWriter w = new StringWriter();
-                Velocity.mergeTemplate(fullSchemaTemplateLoc, DEFAULT_OUTPUT_ENCODING, context, w);
-                final View rootView = new View(w.toString(), "a test description", genPath(ont.getName()), ont.getName());
+                Velocity.mergeTemplate(SCHEMA_TEMPLATE, DEFAULT_OUTPUT_ENCODING, context, w);
+                final View rootView = new View(w.toString(), "a test description", "/" + stripExtension(ont.getName()), ont.getName());
                 views.put(rootView.getPath(), rootView);
                 rootViews.put(rootView.getPath(), rootView);
-                views.putAll(generateClassViews(handler.getClassCache(), classTemplateLoc, pathBuilder));
+                views.putAll(generateClassViews(handler.getClassCache(), pathBuilder));
+                pathBuilder.popLocalPath();
             }
         } else {
         	throw new FileNotFoundException("could not find ontology directory");
         }
-        return new ViewContainer(buildViewIndex(rootViews, contextPath), views);
+        return new ViewContainer(buildViewIndex(rootViews, ""), views);
 	}
 	
-	/**
-	 * Helper function for generating a path for the ontology itself, classes should use a PathBuilder to generate their servlet paths.
-	 * @param fileName
-	 * @return
-	 */
-    private static String genPath(String fileName){
+
+    private static String stripExtension(String fileName){
         int index = fileName.lastIndexOf("."); //assuming there is not multiple file extensions (i.e., .owl.bak)
-        return "/" + fileName.substring(0, index);
+        return fileName.substring(0, index);
     }
 	
-	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, String classTemplateLoc, PathBuilder pathBuilder) {
-	   
+	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, PathBuilder pathBuilder) {
+	    final Template template = RuntimeSingleton.getTemplate(CLASS_TEMPLATE, DEFAULT_OUTPUT_ENCODING);
 	    final Map<String, View> views = new HashMap<String, View>();
 	    for (OwlClass owlClass : classes.values()){
-	        final View view = generateClassView(owlClass, classTemplateLoc, pathBuilder);
+	        final View view = generateClassView(owlClass, template, pathBuilder);
 	        views.put(view.getPath(), view);
 	    }
-	    
 	    return views;
     }
 	
-	private static View generateClassView(OwlClass owlClass, String classTemplateLoc, PathBuilder pathBuilder){
+	private static View generateClassView(OwlClass owlClass, Template classTemplate, PathBuilder pathBuilder){
 		final VelocityContext context = new VelocityContext();
+		final StringWriter w = new StringWriter();
+		final String path = pathBuilder.buildIncomingRequestPath(owlClass.getLabel());
         context.put("class", owlClass);
         context.put("pathBuilder", pathBuilder);
-        final StringWriter w = new StringWriter();
-        Velocity.mergeTemplate(classTemplateLoc, DEFAULT_OUTPUT_ENCODING, context, w);
-        final String path = pathBuilder.buildKeyedPath(owlClass.getLabel());
+        classTemplate.merge(context, w);
         return new View(w.toString(), "a test class description", path, owlClass.getLabel());
 	}
 
@@ -176,37 +173,6 @@ public final class ViewBuilder {
 	}
 	
 	
-	
-	/** path builder for servlet paths */
-	public static class PathBuilder{
-	    private final String localContextPath;
-	    
-	    private PathBuilder(String localContextPath) {
-            this.localContextPath = localContextPath;
-        }
-	    
-	    /**
-	     * will build the correct servlet path this class to embed in a vm template
-	     * @param classLabel
-	     * @return
-	     */
-	    public String buildPagePath(String classLabel){
-	    	final StringBuilder builder = new StringBuilder();
-	        builder.append(localContextPath).append("/");
-	        builder.append(StringUtils.deleteWhitespace(classLabel));
-	        return builder.toString();
-	    }
-	    
-	    /**
-	     * Will build the equivalent representation as buildPagePath(), but without the local context, since servlet will not provide that when serving a request.
-	     */
-        public String buildKeyedPath(String classLabel) {
-        	final StringBuilder builder = new StringBuilder();
-            builder.append("/").append(StringUtils.deleteWhitespace(classLabel));
-            return builder.toString();
-        }
-	    
-	}
 	
 
 

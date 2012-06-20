@@ -12,8 +12,8 @@
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
 	<meta name="robots" content="" />
-	<link rel="stylesheet" type="text/css" href="../css/default.css" media="all"/>
-	<link rel="stylesheet" type="text/css" href="../css/schema.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="${pathBuilder.buildRootPath("css/default.css")}" media="all"/>
+	<link rel="stylesheet" type="text/css" href="${pathBuilder.buildRootPath("css/schema.css")}" media="all"/>
 </head>
 <body>
 
@@ -50,7 +50,7 @@
 											<td>
 												<table class=h>
 													<tr>
-														#set( $path = $pathBuilder.buildPagePath("$child.getLabel()") )
+														#set( $path = $pathBuilder.buildPath("$child.getLabel()") )
 														<td class="tc" colspan=4><a href="${path}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
 													</tr>
 													#recurseChildren( $child ) 

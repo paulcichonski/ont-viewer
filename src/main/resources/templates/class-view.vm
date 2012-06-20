@@ -22,7 +22,7 @@
 #macro( recursivelyPrintSuperClasses $class )
 	#if( $class )
 		#recursivelyPrintSuperClasses( $class.getSuperClass() )
-		#set( $path = $pathBuilder.buildPagePath("$class.getLabel()") )
+		#set( $path = $pathBuilder.buildPath("$class.getLabel()") )
         <a href="${path}">${class.getLabel()}</a>
 		&gt;
 	#end
@@ -52,13 +52,13 @@
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
 	<meta name="robots" content="" />
-	<link rel="stylesheet" type="text/css" href="../css/default.css" media="all"/>
-	<link rel="stylesheet" type="text/css" href="../css/schema.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="${pathBuilder.buildRootPath("css/default.css")}" media="all"/>
+	<link rel="stylesheet" type="text/css" href="${pathBuilder.buildRootPath("css/schema.css")}" media="all"/>
 </head>
 <body>
 
     <div id="header"><h1>Security Automation Controlled Vocabularies / Schemas</h1></div>
-    #set( $path = $pathBuilder.buildPagePath("$class.getLabel()") )
+    #set( $path = $pathBuilder.buildPath("$class.getLabel()") )
     
     <div id="content" class="col1">
 
@@ -78,7 +78,7 @@
     	<h3>More specific types</h3>
 		<ul>
 			#foreach( $subClass in $class.getSubClasses() )
-				#set( $path = $pathBuilder.buildPagePath("$subClass.getLabel()") )
+				#set( $path = $pathBuilder.buildPath("$subClass.getLabel()") )
                 <li><a href="${path}">${subClass.getLabel()}</a></li>
 			#end
     	</ul>

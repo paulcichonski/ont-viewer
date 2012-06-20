@@ -16,13 +16,14 @@ import javax.servlet.http.HttpServletResponse;
 public final class OntologyViewer extends HttpServlet {
     /** */
     private static final long serialVersionUID = 1L;
-    private static final String URI_MAPPING = "/vocabs";
+    // this is ugly, TODO: figure out way to not hardcode this.
+    private static final String SERVLET_PATH = "/vocabs";
     
     @Override
     public void init(ServletConfig config) throws ServletException {
         // TODO Auto-generated method stub
         super.init();
-        Application.initializeApplication(config.getServletContext().getContextPath() + URI_MAPPING);
+        Application.initializeApplication(config.getServletContext().getContextPath() + SERVLET_PATH);
     }
     
     @Override

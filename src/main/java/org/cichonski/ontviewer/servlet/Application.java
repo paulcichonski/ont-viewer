@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpUtils;
+import javax.xml.ws.http.HTTPException;
 
 import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
 
@@ -22,8 +24,7 @@ import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
 final class Application {
     private static final Logger log = Logger.getLogger(Application.class.getName());
     private static final String ONT_DIR_LOC = "ontologies/";
-    private static final String SCHEMA_TEMPLATE = "templates/ont-view-full.vm";
-    private static final String CLASS_TEMPLATE = "templates/class-view.vm";
+
     
     private static Application application;
     
@@ -33,7 +34,8 @@ final class Application {
             throw new ServletException("application is already initialized!");
         }
         try {
-        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), SCHEMA_TEMPLATE, CLASS_TEMPLATE, contextPath), contextPath); 
+            PathBuilder pathBuilder = new DynamicPathBuilder();
+        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder), contextPath); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);
         }
@@ -89,6 +91,8 @@ final class Application {
             }catch (IOException e){
                 log.log(Level.WARNING, "error writing view page to response");
                 throw e; // let higher level servlet code deal with it
+            } catch (NullPointerException e){
+                response.sendError(404, path + " not found");
             }
         }
     }
