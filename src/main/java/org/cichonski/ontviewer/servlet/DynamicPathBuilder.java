@@ -14,7 +14,11 @@ public final class DynamicPathBuilder implements PathBuilder {
     private final String servletPath;
     private final Stack<String> localPaths = new Stack<String>();
     
+    // path to use for webpages
     private String currentPath;
+    
+    // logically equivalent to currentPath, but matches how it will look coming on an HTTPServletRequest (i.e., servlet mapping stripped).
+    private String pathSansServletPath;
     
     DynamicPathBuilder(String servletPath) {
         this.servletPath = servletPath;
@@ -23,18 +27,20 @@ public final class DynamicPathBuilder implements PathBuilder {
     
     @Override
     public String buildPath(String classLabel){
-        final StringBuilder builder = new StringBuilder();
-        if (currentPath != null && !currentPath.isEmpty()){
-            builder.append(currentPath).append("/");
-        }
-        builder.append(StringUtils.deleteWhitespace(classLabel));
-        return builder.toString();
+        return assemblePath(currentPath, classLabel);
     }
     
     @Override
     public String buildIncomingRequestPath(String classLabel) {
+        return assemblePath(pathSansServletPath, classLabel);
+    }
+    
+    private String assemblePath(String path, String classLabel){
         final StringBuilder builder = new StringBuilder();
-        builder.append("/").append(buildPath(classLabel));
+        if (path != null && !path.isEmpty()){
+            builder.append(path).append("/");
+        }
+        builder.append(StringUtils.deleteWhitespace(classLabel));
         return builder.toString();
     }
     
@@ -77,18 +83,16 @@ public final class DynamicPathBuilder implements PathBuilder {
         if (!localPaths.isEmpty()){
             final StringBuilder builder = new StringBuilder();
             final Iterator<String> i = localPaths.iterator();
-            boolean first = true;
             while (i.hasNext()){
-                if (first){
-                    first = false;
-                } else {
-                    builder.append("/");
-                }
+                builder.append("/");
                 builder.append(i.next());
             }
+            pathSansServletPath = builder.toString();
+            builder.insert(0, servletPath);
             currentPath = builder.toString();
         } else {
-            currentPath = "";
+            currentPath = servletPath;
+            pathSansServletPath = "";
         }
     }
     
