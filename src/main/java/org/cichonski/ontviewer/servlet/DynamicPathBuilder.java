@@ -20,8 +20,12 @@ public final class DynamicPathBuilder implements PathBuilder {
     // logically equivalent to currentPath, but matches how it will look coming on an HTTPServletRequest (i.e., servlet mapping stripped).
     private String pathSansServletPath;
     
-    DynamicPathBuilder(String servletPath) {
-        this.servletPath = servletPath;
+    /**
+     * 
+     * @param basePath - should be the base relative path (i.e., /[application-path]/[server-path]).
+     */
+    DynamicPathBuilder(String basePath) {
+        this.servletPath = basePath;
         reset();
     }
     
@@ -68,7 +72,7 @@ public final class DynamicPathBuilder implements PathBuilder {
     }
     
     @Override
-    public String getServletPath() {
+    public String getBasePath() {
         return servletPath;
     }
     

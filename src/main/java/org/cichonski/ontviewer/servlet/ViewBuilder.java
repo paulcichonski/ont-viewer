@@ -70,7 +70,7 @@ public final class ViewBuilder {
         } else {
         	throw new FileNotFoundException("could not find ontology directory");
         }
-        return new ViewContainer(buildViewIndex(rootViews, pathBuilder.getServletPath()), views);
+        return new ViewContainer(buildViewIndex(rootViews, pathBuilder.getBasePath()), views);
 	}
 	
 

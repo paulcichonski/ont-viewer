@@ -4,7 +4,7 @@ public interface PathBuilder {
 
     /**
      * Will build the correct relative path to embed in HTML pages. This method
-     * will embed any localPaths pushed to the pushLocalPath() method.
+     * will include any localPaths pushed to the pushLocalPath() method.
      * 
      * @param classLabel
      * @return
@@ -12,10 +12,12 @@ public interface PathBuilder {
     String buildPath(String classLabel);
     
     /**
-     * Will build the same logical Path as buildPath() (i.e., will represent the
+     * <p>Will build the same logical Path as buildPath() (i.e., will represent the
      * same entity, but it will be a in a form that will match how the path will
      * look to the servlet handling the doGet or doPut. In most cases, this is
-     * just a leading '/'.
+     * involves stripping the application context and servlet path.</p>
+     * 
+     * <p>Clients should use this for generating the keys for views</p>
      * 
      * @param classLabel
      * @return
@@ -37,10 +39,9 @@ public interface PathBuilder {
     String buildRootPath(String resourcePath);
     
     /**
-     * Returns the servlet path that the app is mapped to.
-     * @return
+     * @return - the application context + servlet path (i.e., /[application-context]/[servlet-path]).
      */
-    String getServletPath();
+    String getBasePath();
 
     void pushLocalPath(String path);
 
