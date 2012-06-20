@@ -11,11 +11,13 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 public final class DynamicPathBuilder implements PathBuilder {
+    private final String servletPath;
     private final Stack<String> localPaths = new Stack<String>();
     
     private String currentPath;
     
-    DynamicPathBuilder() {
+    DynamicPathBuilder(String servletPath) {
+        this.servletPath = servletPath;
         this.currentPath = "";
     }
     
@@ -52,6 +54,11 @@ public final class DynamicPathBuilder implements PathBuilder {
     public void pushLocalPath(String path){
         localPaths.push(path);
         buildCurrentPath();
+    }
+    
+    @Override
+    public String getServletPath() {
+        return servletPath;
     }
     
     @Override

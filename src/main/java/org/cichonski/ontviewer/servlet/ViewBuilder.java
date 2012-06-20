@@ -49,14 +49,16 @@ public final class ViewBuilder {
 		final Map<String, View> rootViews = new HashMap<String, View>();
         if (ontologyDirectory != null & ontologyDirectory.isDirectory()){
             for (File ont : ontologyDirectory.listFiles()){
-                pathBuilder.pushLocalPath(stripExtension(ont.getName()));
+                pathBuilder.pushLocalPath(stripExtensions(ont.getName()));
                 final OwlSaxHandler handler = parseOntology(ont);
                 final VelocityContext context = new VelocityContext();
                 context.put("root", handler.getRoot());
                 context.put("pathBuilder", pathBuilder);
                 final StringWriter w = new StringWriter();
                 Velocity.mergeTemplate(SCHEMA_TEMPLATE, DEFAULT_OUTPUT_ENCODING, context, w);
-                final View rootView = new View(w.toString(), "a test description", "/" + stripExtension(ont.getName()), ont.getName());
+                
+                //DO WORK --> THIS PATH GEN SHOULD BE HANDLED BY PATH BUILDER
+                final View rootView = new View(w.toString(), "a test description", "/" + stripExtensions(ont.getName()), ont.getName());
                 views.put(rootView.getPath(), rootView);
                 rootViews.put(rootView.getPath(), rootView);
                 views.putAll(generateClassViews(handler.getClassCache(), pathBuilder));
@@ -65,13 +67,17 @@ public final class ViewBuilder {
         } else {
         	throw new FileNotFoundException("could not find ontology directory");
         }
-        return new ViewContainer(buildViewIndex(rootViews, ""), views);
+        return new ViewContainer(buildViewIndex(rootViews, pathBuilder.getServletPath()), views);
 	}
 	
 
-    private static String stripExtension(String fileName){
-        int index = fileName.lastIndexOf("."); //assuming there is not multiple file extensions (i.e., .owl.bak)
-        return fileName.substring(0, index);
+    private static String stripExtensions(String fileName){
+        int index = fileName.lastIndexOf("."); 
+        while (index != -1){
+            fileName = fileName.substring(0, index);
+            index = fileName.lastIndexOf("."); 
+        }
+        return fileName;
     }
 	
 	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, PathBuilder pathBuilder) {

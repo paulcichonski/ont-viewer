@@ -12,8 +12,9 @@
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
 	<meta name="robots" content="" />
-	<link rel="stylesheet" type="text/css" href="${pathBuilder.buildRootPath("css/default.css")}" media="all"/>
-	<link rel="stylesheet" type="text/css" href="${pathBuilder.buildRootPath("css/schema.css")}" media="all"/>
+	##this template will always be used at the root directory of the servlet.
+	<link rel="stylesheet" type="text/css" href="../css/default.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="../css/schema.css" media="all"/>
 </head>
 <body>
 

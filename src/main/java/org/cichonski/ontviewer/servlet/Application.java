@@ -34,7 +34,7 @@ final class Application {
             throw new ServletException("application is already initialized!");
         }
         try {
-            PathBuilder pathBuilder = new DynamicPathBuilder();
+            PathBuilder pathBuilder = new DynamicPathBuilder(contextPath);
         	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder), contextPath); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);

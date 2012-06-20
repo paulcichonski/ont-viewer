@@ -12,6 +12,17 @@ public interface PathBuilder {
     String buildPath(String classLabel);
     
     /**
+     * Will build the same logical Path as buildPath() (i.e., will represent the
+     * same entity, but it will be a in a form that will match how the path will
+     * look to the servlet handling the doGet or doPut. In most cases, this is
+     * just a leading '/'.
+     * 
+     * @param classLabel
+     * @return
+     */
+    String buildIncomingRequestPath(String classLabel);
+    
+    /**
      * Will append the resourcePath to the correct '../../' structure to ensure
      * it is resolved relative to the root of the web container. This uses the following logic:
      * 
@@ -24,17 +35,12 @@ public interface PathBuilder {
      * @return
      */
     String buildRootPath(String resourcePath);
-
+    
     /**
-     * Will build the same logical Path as buildPath() (i.e., will represent the
-     * same entity, but it will be a in a form that will match how the path will
-     * look to the servlet handling the doGet or doPut. In most cases, this is
-     * just a leading '/'.
-     * 
-     * @param classLabel
+     * Returns the servlet path that the app is mapped to.
      * @return
      */
-    String buildIncomingRequestPath(String classLabel);
+    String getServletPath();
 
     void pushLocalPath(String path);
 
