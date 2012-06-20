@@ -37,11 +37,19 @@ public final class ViewBuilder {
     private static final String CLASS_TEMPLATE = "templates/class-view.vm";
 
     /**
-     * Helper method to build out views for a set of ontologies found in the specified directory.
+     * Helper method to build out views for a set of ontologies found in the
+     * specified directory. This use the pathBuilder to build out the dynamic
+     * http paths for every class view, but it does create the top-level
+     * schema-summary views in the top-level servlet directory (i.e., a relative
+     * path of "/[servlet-path]/[ontology-name]". All class views are created in
+     * the logical directory of [servlet-path]/[ontology-name]/[class-name].
+     * 
      * @param ontologyDirectory - directory containing the ontologies
-     * @param contextPath - inital context path that should be used when constructing URLs.
+     * @param pathBuilder - builder that will be used to generate paths for all
+     *            views.
      * @return
-     * @throws FileNotFoundException - if any files (ontologies or templates) are not found.
+     * @throws FileNotFoundException - if any files (ontologies or templates)
+     *             are not found.
      */
 	public static ViewContainer buildViews(File ontologyDirectory, PathBuilder pathBuilder) throws FileNotFoundException{
 	    initVelocity();

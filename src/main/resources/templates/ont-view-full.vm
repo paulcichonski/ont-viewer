@@ -28,47 +28,31 @@
     		<tr>
     			<td class="tc" colspan=4><a href="">Thing</a></td>
     		</tr>
+    							#macro ( recurseChildren $e )     
+    								#if( $e.getSubClasses().size() > 0 )
+    									#foreach ($child in $e.getSubClasses() )
+    										<tr>
+    											<td class="space"></td>
+    											<td class="bar"></td>
+    											<td class="space"></td>
+    											<td>
+    												<table class=h>
+    													<tr>
+    														#set( $path = $pathBuilder.buildPath("$child.getLabel()") )
+    														<td class="tc" colspan=4><a href="${path}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
+    													</tr>
+    													#recurseChildren( $child ) 
+                                                    </table>
+                                                </td>
+                                            </tr>
+    										
+    									#end
     
-    		#foreach($class in $root.getSubClasses())
-    			
-    		    <tr>
-    				<td class="space"></td>
-                    <td class="bar"></td>
-                    <td class="space"></td>
-                    <td>
-    					<table class=h>
-    						<tr>
-    							<td class="tc" colspan=4><a href="../${class.getURI()}">${class.getLabel()}</a>: ${class.getDescritpion()}</td>
-                            </tr>
-							
-							#macro ( recurseChildren $e )     
-								#if( $e.getSubClasses().size() > 0 )
-									#foreach ($child in $e.getSubClasses() )
-										<tr>
-											<td class="space"></td>
-											<td class="bar"></td>
-											<td class="space"></td>
-											<td>
-												<table class=h>
-													<tr>
-														#set( $path = $pathBuilder.buildPath("$child.getLabel()") )
-														<td class="tc" colspan=4><a href="${path}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
-													</tr>
-													#recurseChildren( $child ) 
-                                                </table>
-                                            </td>
-                                        </tr>
-										
-									#end
+    								#end
+    							#end
+    							## start the recursion
+    							#recurseChildren(${root})
 
-								#end
-							#end
-							## start the recursion
-							#recurseChildren(${class})
-                		</table>
-    				</td>
-           		</tr>
-    		#end
     	</table>
 	</div>
 		
