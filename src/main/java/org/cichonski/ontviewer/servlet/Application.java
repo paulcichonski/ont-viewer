@@ -1,10 +1,12 @@
 package org.cichonski.ontviewer.servlet;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +24,7 @@ import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
 final class Application {
     private static final Logger log = Logger.getLogger(Application.class.getName());
     private static final String ONT_DIR_LOC = "ontologies/";
+    private static final String PROPERTY_FILE_LOC ="ont-viewer.properties";
 
     // this class is a singleton
     private static Application application;
@@ -38,8 +41,12 @@ final class Application {
         }
         try {
             PathBuilder pathBuilder = new DynamicPathBuilder(contextPath);
-        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder)); 
+            Properties props = new Properties();
+            props.load(new FileInputStream(getFile(PROPERTY_FILE_LOC)));
+        	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder, props)); 
         } catch (FileNotFoundException e){
+        	throw new ServletException(e);
+        } catch (IOException e){
         	throw new ServletException(e);
         }
     }

@@ -37,23 +37,32 @@ public final class ViewBuilder {
     private static final String CLASS_TEMPLATE = "templates/class-view.vm";
 
     /**
-     * Helper method to build out views for a set of ontologies found in the
-     * specified directory. This use the pathBuilder to build out the dynamic
-     * http paths for every class view, but it does create the top-level
-     * schema-summary views in the top-level servlet directory (i.e., a relative
-     * path of "/[servlet-path]/[ontology-name]". All class views are created in
-     * the logical directory of [servlet-path]/[ontology-name]/[class-name].
-     * 
-     * @param ontologyDirectory - directory containing the ontologies
-     * @param pathBuilder - builder that will be used to generate paths for all
-     *            views.
-     * @return
-     * @throws FileNotFoundException - if any files (ontologies or templates)
-     *             are not found.
-     */
-	public static ViewContainer buildViews(File ontologyDirectory, PathBuilder pathBuilder) throws FileNotFoundException{
+	 * <p>Helper method to build out views for a set of ontologies found in the
+	 * specified directory. This use the pathBuilder to build out the dynamic
+	 * http paths for every class view, but it does create the top-level
+	 * schema-summary views in the top-level servlet directory (i.e., a relative
+	 * path of "/[servlet-path]/[ontology-name]". All class views are created in
+	 * the logical directory of [servlet-path]/[ontology-name]/[class-name].</p>
+	 * 
+	 * <p>Method accepts the following configuration properties (passed in through the props variable):
+	 * <ul>
+	 * <ol>site-title = the website title.</ol>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param ontologyDirectory
+	 *            - directory containing the ontologies
+	 * @param pathBuilder
+	 *            - builder that will be used to generate paths for all views.
+	 * @param props - configuration properties.
+	 * @return
+	 * @throws FileNotFoundException
+	 *             - if any files (ontologies or templates) are not found.
+	 */
+	public static ViewContainer buildViews(File ontologyDirectory, PathBuilder pathBuilder, Properties props) throws FileNotFoundException{
 	    initVelocity();
-		final Map<String, View> views = new HashMap<String, View>();
+		final VelocityContext propertiesContext = createPropertiesContext(props);
+	    final Map<String, View> views = new HashMap<String, View>();
 		final Map<String, View> rootViews = new HashMap<String, View>();
         if (ontologyDirectory != null & ontologyDirectory.isDirectory()){
             final Template schemaViewTemplate = RuntimeSingleton.getTemplate(SCHEMA_TEMPLATE, DEFAULT_OUTPUT_ENCODING);
@@ -61,16 +70,22 @@ public final class ViewBuilder {
                 String ontologyName = stripExtensions(ont.getName());
                 pathBuilder.pushLocalPath(stripExtensions(ontologyName));
                 final OwlSaxHandler handler = parseOntology(ont);
-                final View fullSchemaView = generateSchemaView(schemaViewTemplate, ontologyName, handler.getRoot(), pathBuilder);
+                final View fullSchemaView = generateSchemaView(schemaViewTemplate, ontologyName, handler.getRoot(), pathBuilder, propertiesContext);
                 views.put(fullSchemaView.getPath(), fullSchemaView);
                 rootViews.put(fullSchemaView.getPath(), fullSchemaView);
-                views.putAll(generateClassViews(handler.getClassCache(), pathBuilder));
+                views.putAll(generateClassViews(handler.getClassCache(), pathBuilder, propertiesContext));
                 pathBuilder.popLocalPath();
             }
         } else {
         	throw new FileNotFoundException("could not find ontology directory");
         }
         return new ViewContainer(buildViewIndex(rootViews, pathBuilder.getBasePath()), views);
+	}
+	
+	private static VelocityContext createPropertiesContext(Properties props){
+		final VelocityContext context = new VelocityContext();
+		context.put("site-title", props.getProperty("site-title"));
+		return context;
 	}
 	
 
@@ -83,8 +98,8 @@ public final class ViewBuilder {
         return fileName;
     }
     
-    private static View generateSchemaView(Template template, String ontologyName, OwlClass root, PathBuilder pathBuilder){
-        final VelocityContext context = new VelocityContext();
+    private static View generateSchemaView(Template template, String ontologyName, OwlClass root, PathBuilder pathBuilder, VelocityContext propContext){
+        final VelocityContext context = new VelocityContext(propContext);
         context.put("root", root);
         context.put("pathBuilder", pathBuilder);
         final StringWriter w = new StringWriter();
@@ -93,20 +108,20 @@ public final class ViewBuilder {
         return new View(w.toString(), "a test description", schemaViewPath, ontologyName);
     }
 	
-	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, PathBuilder pathBuilder) {
+	private static Map<String, View> generateClassViews(Map<URI, OwlClass> classes, PathBuilder pathBuilder, VelocityContext propContext) {
 	    final Template template = RuntimeSingleton.getTemplate(CLASS_TEMPLATE, DEFAULT_OUTPUT_ENCODING);
 	    final Map<String, View> views = new HashMap<String, View>();
 	    for (OwlClass owlClass : classes.values()){
-	        final View view = generateClassView(owlClass, template, pathBuilder);
+	        final View view = generateClassView(owlClass, template, pathBuilder, propContext);
 	        views.put(view.getPath(), view);
 	    }
 	    return views;
     }
 	
-	private static View generateClassView(OwlClass owlClass, Template classTemplate, PathBuilder pathBuilder){
-		final VelocityContext context = new VelocityContext();
+	private static View generateClassView(OwlClass owlClass, Template classTemplate, PathBuilder pathBuilder, VelocityContext propContext){
+		final VelocityContext context = new VelocityContext(propContext);
 		final StringWriter w = new StringWriter();
-		final String path = pathBuilder.buildIncomingRequestPath(owlClass.getLabel());
+		String path = pathBuilder.buildIncomingRequestPath(owlClass.getLabel());
         context.put("class", owlClass);
         context.put("pathBuilder", pathBuilder);
         classTemplate.merge(context, w);
@@ -114,7 +129,7 @@ public final class ViewBuilder {
 	}
 
     private static void initVelocity(){
-	    Properties p = new Properties();
+	    final Properties p = new Properties();
 	    p.setProperty("resource.loader", "class");
 	    p.setProperty("class.resource.loader.description", "Velocity Classpath Resource Loader");
 	    p.setProperty("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
@@ -129,10 +144,10 @@ public final class ViewBuilder {
 	    OwlSaxHandler handler = null;
 	    try {
             handler = new OwlSaxHandler();
-            SAXParserFactory factory = SAXParserFactory.newInstance();
+            final SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setFeature("http://xml.org/sax/features/namespaces", true);
             factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-            SAXParser parser = factory.newSAXParser();
+            final SAXParser parser = factory.newSAXParser();
             parser.parse(ont, handler);
         } catch (IOException e){
             log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);

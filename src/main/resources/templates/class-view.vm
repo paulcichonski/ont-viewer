@@ -47,7 +47,7 @@
 <!-- page style is modeled off of the http://schema.org/docs/full.html taxonomy view -->
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-	<title>Class View</title>
+	<title>${site-title} - ${class.getLabel()}</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
@@ -57,7 +57,7 @@
 </head>
 <body>
 
-    <div id="header"><h1>Security Automation Controlled Vocabularies / Schemas</h1></div>
+    <div id="header"><h1>${site-title}</h1></div>
     #set( $path = $pathBuilder.buildPath("$class.getLabel()") )
     
     <div id="content" class="col1">
