@@ -25,11 +25,11 @@ public final class DynamicPathBuilder implements PathBuilder {
      * 
      * @param basePath - should be the base relative path (i.e., /[application-path]/[server-path]).
      */
-    DynamicPathBuilder(String basePath) {
+    public DynamicPathBuilder(String basePath) {
         this(basePath, null);
     }
     
-    DynamicPathBuilder(String basePath, String fileExtension) {
+    public DynamicPathBuilder(String basePath, String fileExtension) {
         this.servletPath = basePath;
         this.fileExtension = fileExtension;
         reset();

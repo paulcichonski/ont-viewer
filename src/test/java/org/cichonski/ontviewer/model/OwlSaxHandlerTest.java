@@ -11,9 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -129,12 +126,7 @@ public class OwlSaxHandlerTest extends TestCase {
     	InputStream ont = null;
     	try {
         	ont = Thread.currentThread().getContextClassLoader().getResourceAsStream("ontologies/subset_indicators-vocabulary.owl");
-            final OwlSaxHandler handler = new OwlSaxHandler();
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setFeature("http://xml.org/sax/features/namespaces", true);
-            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-            final SAXParser parser = factory.newSAXParser();
-            parser.parse(ont, handler);
+            final OwlSaxHandler handler = OwlSaxHandler.parseOntology(ont);
             
             final Map<URI, OwlClass> classCache = handler.getClassCache();
             
@@ -161,16 +153,9 @@ public class OwlSaxHandlerTest extends TestCase {
     	InputStream ont = null;
     	try {
         	ont = Thread.currentThread().getContextClassLoader().getResourceAsStream("ontologies/subset_indicators-vocabulary.owl");
-            final OwlSaxHandler handler = new OwlSaxHandler();
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setFeature("http://xml.org/sax/features/namespaces", true);
-            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-            final SAXParser parser = factory.newSAXParser();
-            parser.parse(ont, handler);
-            
+            final OwlSaxHandler handler = OwlSaxHandler.parseOntology(ont);
             final OwlClass treeRoot = handler.getRoot();
             testClasses(treeRoot, expectedRoot, true);
-            
     	} catch (Exception e){
     		e.printStackTrace();
     		throw new Exception(e);

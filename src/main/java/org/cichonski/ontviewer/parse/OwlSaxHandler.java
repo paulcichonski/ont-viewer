@@ -2,6 +2,7 @@ package org.cichonski.ontviewer.parse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -91,14 +92,38 @@ public class OwlSaxHandler extends DefaultHandler {
     public static OwlSaxHandler parseOntology(File ont) throws ParserConfigurationException, SAXException, IOException{
         OwlSaxHandler handler = null;
         handler = new OwlSaxHandler();
+        getDefaultInstance().parse(ont, handler);
+        return handler;
+    }
+    
+    /**
+     * <p>
+     * Static call that will instantiate an instance of the class with the
+     * default settings, parse an ontology file, and return the fully populated
+     * handler. Clients should use this method to parse an ontology unless they
+     * need to override default settings.
+     * </p>
+     * 
+     * @param ont - the ontology to parse
+     * @return fully populated instance of this class
+     * @throws ParserConfigurationException 
+     * @throws IOException 
+     * @throws SAXException 
+     */
+    public static OwlSaxHandler parseOntology(InputStream ont) throws ParserConfigurationException, SAXException, IOException{
+        OwlSaxHandler handler = null;
+        handler = new OwlSaxHandler();
+        getDefaultInstance().parse(ont, handler);
+        return handler;
+    }
+    
+    private static SAXParser getDefaultInstance() throws ParserConfigurationException, SAXException{
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setFeature("http://xml.org/sax/features/namespaces", true);
         factory.setFeature(
             "http://xml.org/sax/features/namespace-prefixes",
             true);
-        final SAXParser parser = factory.newSAXParser();
-        parser.parse(ont, handler);
-        return handler;
+        return factory.newSAXParser();
     }
     
     
