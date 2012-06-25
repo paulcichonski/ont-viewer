@@ -36,12 +36,24 @@ public final class DynamicPathBuilder implements PathBuilder {
     
     @Override
     public String buildPath(String classLabel){
+        validateClassLabel(classLabel);
         return assemblePath(currentPath, classLabel);
     }
     
     @Override
     public String buildIncomingRequestPath(String classLabel) {
+        validateClassLabel(classLabel);
+        if (pathSansServletPath == null || pathSansServletPath.isEmpty()){
+            // only time to append a '/' is if there is no preceding slash, since servlet doRequest will always have a '/' to start the path.
+            return assemblePath(pathSansServletPath, "/" + classLabel); 
+        }
         return assemblePath(pathSansServletPath, classLabel);
+    }
+    
+    private void validateClassLabel(String classLabel){
+        if (classLabel.contains("/") && classLabel.contains("\\")){
+            throw new IllegalStateException(classLabel + " contains slashes");
+        }
     }
     
     private String assemblePath(String path, String classLabel){

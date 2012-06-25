@@ -1,5 +1,9 @@
 package org.cichonski.ontviewer.servlet;
 
+/**
+ * Clients should not send any '/' or '\' characters to the buildPath() or buildIncomingRequestPath method.
+ *
+ */
 public interface PathBuilder {
 
     /**

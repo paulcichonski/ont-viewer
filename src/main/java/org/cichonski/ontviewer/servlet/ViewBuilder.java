@@ -7,8 +7,10 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +37,7 @@ public final class ViewBuilder {
     private static final String DEFAULT_OUTPUT_ENCODING = "UTF-8";
     private static final String SCHEMA_TEMPLATE = "templates/ont-view-full.vm";
     private static final String CLASS_TEMPLATE = "templates/class-view.vm";
+    private static final String INDEX_TEMPLATE = "templates/index.vm";
 
     /**
 	 * <p>Helper method to build out views for a set of ontologies found in the
@@ -63,7 +66,7 @@ public final class ViewBuilder {
 	    initVelocity();
 		final VelocityContext propertiesContext = createPropertiesContext(props);
 	    final Map<String, View> views = new HashMap<String, View>();
-		final Map<String, View> rootViews = new HashMap<String, View>();
+		final Set<View> rootViews = new HashSet<View>();
         if (ontologyDirectory != null & ontologyDirectory.isDirectory()){
             final Template schemaViewTemplate = RuntimeSingleton.getTemplate(SCHEMA_TEMPLATE, DEFAULT_OUTPUT_ENCODING);
             for (File ont : ontologyDirectory.listFiles()){
@@ -71,15 +74,23 @@ public final class ViewBuilder {
                 pathBuilder.pushLocalPath(stripExtensions(ontologyName));
                 final OwlSaxHandler handler = parseOntology(ont);
                 final View fullSchemaView = generateSchemaView(schemaViewTemplate, ontologyName, handler.getRoot(), pathBuilder, propertiesContext);
-                views.put(fullSchemaView.getPath(), fullSchemaView);
-                rootViews.put(fullSchemaView.getPath(), fullSchemaView);
+                rootViews.add(fullSchemaView);
                 views.putAll(generateClassViews(handler.getClassCache(), pathBuilder, propertiesContext));
                 pathBuilder.popLocalPath();
             }
         } else {
         	throw new FileNotFoundException("could not find ontology directory");
         }
-        return new ViewContainer(buildViewIndex(rootViews, pathBuilder.getBasePath()), views);
+        String indexHTML = processRootViews(rootViews, views, pathBuilder, propertiesContext);
+        return new ViewContainer(indexHTML, views);
+	}
+	
+	private static String processRootViews(Set<View> rootViews, Map<String, View> allViews, 
+	        PathBuilder pathBuilder, VelocityContext propContext){
+	    for (View rootView : rootViews){
+	        allViews.put(pathBuilder.buildIncomingRequestPath(rootView.getPath()), rootView);
+	    }
+	    return buildViewIndex(rootViews, pathBuilder, propContext);
 	}
 	
 	private static VelocityContext createPropertiesContext(Properties props){
@@ -104,7 +115,7 @@ public final class ViewBuilder {
         context.put("pathBuilder", pathBuilder);
         final StringWriter w = new StringWriter();
         template.merge(context, w);
-        String schemaViewPath = "/" + ontologyName; //view assumption is hardcoded here, assuming path is directly after servlet mapping.
+        String schemaViewPath = ontologyName;
         return new View(w.toString(), "a test description", schemaViewPath, ontologyName);
     }
 	
@@ -160,24 +171,20 @@ public final class ViewBuilder {
 	}
 	
 	/**
-	 * Returns a simple index of the views contained in the specified map.
-	 * @param views
-	 * @param contextPath of app
+	 * Build an index page of all rootViews
+	 * @param rootViews
+	 * @param pathBuilder
+	 * @param propContext
 	 * @return
 	 */
-	private static String buildViewIndex(Map<String, View> views, String contextPath){
-        //TODO: replace all view gen code with velocity templates.
-        final StringBuilder builder = new StringBuilder();
-        builder.append("<html><head></head><title>Ontology Index</title><body>");
-        for (Map.Entry<String, View> entry : views.entrySet()){
-            final String path = entry.getKey();
-            final View view = entry.getValue();
-            builder.append("<br/>");
-            builder.append(view.getCleanName()).append(" - ");
-            builder.append("<a href=\"").append(contextPath).append(path).append("\">").append(view.getDescription()).append("</a>");
-        }
-        builder.append("</html>");
-        return builder.toString();
+	private static String buildViewIndex(Set<View> rootViews, PathBuilder pathBuilder, VelocityContext propContext){
+	    final VelocityContext context = new VelocityContext(propContext);
+	    final Template template = RuntimeSingleton.getTemplate(INDEX_TEMPLATE, DEFAULT_OUTPUT_ENCODING);
+        context.put("rootViews", rootViews);
+        context.put("pathBuilder", pathBuilder);
+        final StringWriter w = new StringWriter();
+        template.merge(context, w);
+        return w.toString();
 	}
 	
 	

@@ -6,7 +6,7 @@ package org.cichonski.ontviewer.servlet;
  * @author Paul Cichonski
  *
  */
-final class View {
+public final class View {
     private final String view;
     private final String description;
     private final String path;

@@ -27,16 +27,12 @@
 		&gt;
 	#end
 #end
-	
 
 #macro( printPageTitle $class )
 	<h1 class="page-title">
 		#recursivelyPrintSuperClasses( $class )
     </h1>
 #end
-
-
-
 
 ## Velocity template for generating a schema.org-like view of an ontology.
 

@@ -1,0 +1,36 @@
+## Velocity template for generating a listing of all ontologies managed by the current webapp (i.e., all the loaded owl files).
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- ======================================== -->
+<!-- =     GENERATED FILE! DO NOT EDIT!     = -->
+<!-- ======================================== -->
+<!-- page style is modeled off of the http://schema.org/docs/full.html taxonomy view -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>${site-title} - Schema View</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<meta name="robots" content="" />
+	##this template will always be used at the root directory of the servlet.
+	<link rel="stylesheet" type="text/css" href="../css/default.css" media="all"/>
+	<link rel="stylesheet" type="text/css" href="../css/schema.css" media="all"/>
+</head>
+<body>
+	
+
+
+<div id="header"><h1>${site-title}</h1></div>
+	<div id="content" class="col1">
+        <h1>Schemas Managed by Application</h1>
+    	<dl>
+			#foreach( $view in $rootViews )
+				#set( $path = $pathBuilder.buildPath("$view.getPath()") )
+                <dt><a href="${path}">$view.getCleanName()</a></dt>
+                <dd>${view.getDescription()}</dd>	
+			#end
+        </dl>
+    </div>
+	
+</body>
+</html>
