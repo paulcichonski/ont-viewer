@@ -6,7 +6,6 @@ Servlet code for generating schema.org like views of ontologies.
 --> Ontologies for viewing need to go in "src / main / resources / ontologies"
 
 TODO:
-- Create template for index page
 - hook in owl thing view
 - Extend sax parser to gather ontology description and annotation properties
 - tests for propertyBuilder and viewBuilder
