@@ -10,11 +10,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.cichonski.ontviewer.servlet.DynamicPathBuilder;
 import org.cichonski.ontviewer.servlet.PathBuilder;
+import org.cichonski.ontviewer.servlet.View;
 import org.cichonski.ontviewer.servlet.ViewBuilder;
 import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
 
@@ -50,6 +52,10 @@ public class App {
             final PathBuilder pathBuilder = new DynamicPathBuilder(contextPath, fileExtension);
             ViewContainer viewContainer = ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder, props); 
             writeFile(new File(DEFAULT_STORAGE_LOCATION + "index.html"), viewContainer.getIndex());
+            for (View view : viewContainer.getViews().values()){
+                writeFile(new File(DEFAULT_STORAGE_LOCATION
+                    + makePathOsAgnostic(view.getPath())), view.getView());
+            }
         } catch (FileNotFoundException e){
             throw new RuntimeException(e);
         } catch (IOException e){
@@ -64,10 +70,10 @@ public class App {
             writer = new FileWriter(file);
             writer.write(html);
         } catch (IOException e){
-            throw new RuntimeException(e);
+            throw new RuntimeException(file.getName(), e);
         } finally {
             try {
-                writer.close();
+                if (writer != null){writer.close();}
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -82,6 +88,21 @@ public class App {
             log.log(Level.SEVERE, "could not find ontologies for view generation", e);
         }
         return file;
+    }
+    
+    private static String makePathOsAgnostic(String path){
+        final StringBuilder pathBuilder = new StringBuilder();
+        final StringTokenizer tokenizer = new StringTokenizer(path, "/");
+        boolean first = true;
+        while (tokenizer.hasMoreElements()){
+            if (!first){
+                pathBuilder.append(PATH_SEPERATOR);
+            } else {
+                first = false;
+            }
+            pathBuilder.append(tokenizer.nextElement());
+        }
+        return pathBuilder.toString();
     }
 
 }
