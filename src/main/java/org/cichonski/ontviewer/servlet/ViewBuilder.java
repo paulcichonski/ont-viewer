@@ -15,8 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -154,8 +152,6 @@ public final class ViewBuilder {
 	    Velocity.init(p);
 	}
 	
-
-	
 	/**
 	 * Build an index page of all rootViews
 	 * @param rootViews
@@ -172,8 +168,7 @@ public final class ViewBuilder {
         template.merge(context, w);
         return w.toString();
 	}
-	
-	
+
 	/**
 	 * Contains the views and the index of the root ontology
 	 * @author Paul Cichonski
@@ -197,11 +192,7 @@ public final class ViewBuilder {
         }
 	}
 	
-	
-	   /**
-     * 
-     * @return - fully populated handler
-     */
+
     private static OwlSaxHandler parseOntology(File ont){
         OwlSaxHandler handler = null;
         try {
