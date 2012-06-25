@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 public final class DynamicPathBuilder implements PathBuilder {
     private final String servletPath;
     private final Stack<String> localPaths = new Stack<String>();
+    private final String fileExtension;
     
     // path to use for webpages
     private String currentPath;
@@ -25,7 +26,12 @@ public final class DynamicPathBuilder implements PathBuilder {
      * @param basePath - should be the base relative path (i.e., /[application-path]/[server-path]).
      */
     DynamicPathBuilder(String basePath) {
+        this(basePath, null);
+    }
+    
+    DynamicPathBuilder(String basePath, String fileExtension) {
         this.servletPath = basePath;
+        this.fileExtension = fileExtension;
         reset();
     }
     
@@ -62,6 +68,9 @@ public final class DynamicPathBuilder implements PathBuilder {
             builder.append(path).append("/");
         }
         builder.append(StringUtils.deleteWhitespace(classLabel));
+        if (fileExtension != null && !fileExtension.isEmpty()){
+            builder.append(fileExtension);
+        }
         return builder.toString();
     }
     

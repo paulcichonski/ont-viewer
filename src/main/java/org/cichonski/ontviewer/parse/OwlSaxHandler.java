@@ -23,8 +23,6 @@ import org.cichonski.ontviewer.model.Property;
 import org.cichonski.ontviewer.model.PropertyBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**

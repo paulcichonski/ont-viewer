@@ -40,9 +40,10 @@ final class Application {
             throw new ServletException("application is already initialized!");
         }
         try {
-            PathBuilder pathBuilder = new DynamicPathBuilder(contextPath);
             Properties props = new Properties();
             props.load(new FileInputStream(getFile(PROPERTY_FILE_LOC)));
+            String fileExtension = props.getProperty("file-extension");
+            PathBuilder pathBuilder = new DynamicPathBuilder(contextPath, fileExtension);
         	application = new Application(ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder, props)); 
         } catch (FileNotFoundException e){
         	throw new ServletException(e);
