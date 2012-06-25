@@ -1,5 +1,7 @@
 package org.cichonski.ontviewer.parse;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -11,12 +13,18 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.cichonski.ontviewer.model.OwlClass;
 import org.cichonski.ontviewer.model.OwlClassBuilder;
 import org.cichonski.ontviewer.model.Property;
 import org.cichonski.ontviewer.model.PropertyBuilder;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -65,8 +73,36 @@ public class OwlSaxHandler extends DefaultHandler {
     private Stack<Integer> unknonwElements = new Stack<Integer>(); //keep track of unknown elements we are traversing.
     private boolean property = false;
     
-    public OwlSaxHandler() {
+    private OwlSaxHandler() {
     }
+
+    /**
+     * <p>
+     * Static call that will instantiate an instance of the class with the
+     * default settings, parse an ontology file, and return the fully populated
+     * handler. Clients should use this method to parse an ontology unless they
+     * need to override default settings.
+     * </p>
+     * 
+     * @param ont - the ontology to parse
+     * @return fully populated instance of this class
+     * @throws ParserConfigurationException 
+     * @throws IOException 
+     * @throws SAXException 
+     */
+    public static OwlSaxHandler parseOntology(File ont) throws ParserConfigurationException, SAXException, IOException{
+        OwlSaxHandler handler = null;
+        handler = new OwlSaxHandler();
+        final SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setFeature("http://xml.org/sax/features/namespaces", true);
+        factory.setFeature(
+            "http://xml.org/sax/features/namespace-prefixes",
+            true);
+        final SAXParser parser = factory.newSAXParser();
+        parser.parse(ont, handler);
+        return handler;
+    }
+    
     
     @Override
     public void startDocument() throws SAXException {

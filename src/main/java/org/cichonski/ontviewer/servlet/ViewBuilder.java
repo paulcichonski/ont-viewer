@@ -85,6 +85,14 @@ public final class ViewBuilder {
         return new ViewContainer(indexHTML, views);
 	}
 	
+	/**
+	 * Generate the appropriate keys for the rootViews (pathBuilder should have no local paths on it) and create the index page.
+	 * @param rootViews
+	 * @param allViews
+	 * @param pathBuilder - should have no local path associated with it, unless rootViews are in some subDirectory structure.
+	 * @param propContext
+	 * @return - index page of all ontologies (i.e., rootViews).
+	 */
 	private static String processRootViews(Set<View> rootViews, Map<String, View> allViews, 
 	        PathBuilder pathBuilder, VelocityContext propContext){
 	    for (View rootView : rootViews){
@@ -98,7 +106,6 @@ public final class ViewBuilder {
 		context.put("site-title", props.getProperty("site-title"));
 		return context;
 	}
-	
 
     private static String stripExtensions(String fileName){
         int index = fileName.lastIndexOf("."); 
@@ -147,28 +154,7 @@ public final class ViewBuilder {
 	    Velocity.init(p);
 	}
 	
-	/**
-	 * 
-	 * @return - fully populated handler
-	 */
-	private static OwlSaxHandler parseOntology(File ont){
-	    OwlSaxHandler handler = null;
-	    try {
-            handler = new OwlSaxHandler();
-            final SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setFeature("http://xml.org/sax/features/namespaces", true);
-            factory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
-            final SAXParser parser = factory.newSAXParser();
-            parser.parse(ont, handler);
-        } catch (IOException e){
-            log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);
-        } catch (SAXException e) {
-            log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);
-        } catch (ParserConfigurationException e) {
-            log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);
-        }
-        return handler;
-	}
+
 	
 	/**
 	 * Build an index page of all rootViews
@@ -197,8 +183,6 @@ public final class ViewBuilder {
 	    private final String index;
 	    private final Map<String, View> views;
 	    
-	   
-	    
 	    public ViewContainer(String index, Map<String, View> views) {
             this.index = index;
             this.views = views;
@@ -214,7 +198,23 @@ public final class ViewBuilder {
 	}
 	
 	
-	
+	   /**
+     * 
+     * @return - fully populated handler
+     */
+    private static OwlSaxHandler parseOntology(File ont){
+        OwlSaxHandler handler = null;
+        try {
+            handler = OwlSaxHandler.parseOntology(ont);
+        } catch (IOException e){
+            log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);
+        } catch (SAXException e) {
+            log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);
+        } catch (ParserConfigurationException e) {
+            log.log(Level.WARNING, "couldn't parse file: " + ont.getName(), e);
+        }
+        return handler;
+    }
 
 
 }

@@ -98,8 +98,6 @@ public final class DynamicPathBuilder implements PathBuilder {
         return null;
     }
 
-
-    
     private void buildCurrentPath(){
         if (!localPaths.isEmpty()){
             final StringBuilder builder = new StringBuilder();
