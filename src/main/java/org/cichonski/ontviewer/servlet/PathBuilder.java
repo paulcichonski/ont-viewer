@@ -11,6 +11,8 @@ public interface PathBuilder {
 	 * page in a parent directory. Some implementations may just delegate to
 	 * buildPath() if they are building absolute paths for everything.
 	 * 
+	 * TODO: if this is actually a common feature, then this will probably have to be recursive... i.e., build from n-higher or n-lower paths.
+	 * 
 	 * @param classLabel
 	 * @return
 	 */
