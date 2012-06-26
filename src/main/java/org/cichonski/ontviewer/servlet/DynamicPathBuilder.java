@@ -50,6 +50,11 @@ public final class DynamicPathBuilder implements PathBuilder {
     }
     
     @Override
+    public String buildPathFromParent(String classLabel) {
+    	return buildPath(classLabel);
+    }
+    
+    @Override
     public String buildPath(String classLabel){
         validateClassLabel(classLabel);
         return assemblePath(currentPath, classLabel);

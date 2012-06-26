@@ -38,7 +38,7 @@
     											<td>
     												<table class=h>
     													<tr>
-    														#set( $path = $pathBuilder.buildPath("$child.getLabel()") )
+    														#set( $path = $pathBuilder.buildPathFromParent("$child.getLabel()") )
     														<td class="tc" colspan=4><a href="${path}">${child.getLabel()}</a>: ${child.getDescritpion()}</td>
     													</tr>
     													#recurseChildren( $child ) 

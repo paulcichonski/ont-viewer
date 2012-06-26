@@ -53,6 +53,7 @@ public final class StaticPathBuilder implements PathBuilder {
         this.basePathDepth = parseBasePath(basePath);
         this.fileExtension = fileExtension;
     }
+
     
     private int parseBasePath(String basePath){
     	if (basePath == null || basePath.isEmpty()){
@@ -70,7 +71,25 @@ public final class StaticPathBuilder implements PathBuilder {
     private void reset(){
         this.currentPath = servletPath;
     }
-    
+
+    // build the path that will reach the class starting from a parent directory
+    public String buildPathFromParent(String classLabel){
+        validateClassLabel(classLabel);
+        final StringBuilder builder = new StringBuilder();
+        int parentDepth = basePathDepth + localPaths.size() > 0 ? basePathDepth + localPaths.size() - 1 : 0;
+        for (int i=0; i<parentDepth; i++){
+        	builder.append("../");
+        }
+        if (currentPath != null && !currentPath.isEmpty()){
+        	builder.deleteCharAt(builder.length()-1); //remove last '/' since currentPath will start with one.
+        	builder.append(currentPath).append("/");
+        }
+        builder.append(StringUtils.deleteWhitespace(classLabel));
+        if (fileExtension != null && !fileExtension.isEmpty()){
+            builder.append(fileExtension);
+        }
+        return builder.toString();
+    }
     
     @Override
     public String buildPath(String classLabel){
@@ -78,6 +97,9 @@ public final class StaticPathBuilder implements PathBuilder {
         final StringBuilder builder = new StringBuilder();
         for (int i=0; i<basePathDepth+localPaths.size(); i++){
         	builder.append("../");
+        }
+        if (currentPath != null && !currentPath.isEmpty()){
+        	builder.append(currentPath).append("/");
         }
         builder.append(StringUtils.deleteWhitespace(classLabel));
         if (fileExtension != null && !fileExtension.isEmpty()){
@@ -149,11 +171,13 @@ public final class StaticPathBuilder implements PathBuilder {
     private void buildCurrentPath(){
         if (!localPaths.isEmpty()){
             final StringBuilder builder = new StringBuilder();
-            builder.append(servletPath);
             final Iterator<String> i = localPaths.iterator();
             while (i.hasNext()){
                 builder.append("/");
                 builder.append(i.next());
+            }
+            if (servletPath != null && !servletPath.isEmpty()){
+            	builder.insert(0, servletPath);
             }
             currentPath = builder.toString();
         } else {

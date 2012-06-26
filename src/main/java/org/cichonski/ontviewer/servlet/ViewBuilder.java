@@ -72,6 +72,7 @@ public final class ViewBuilder {
                 pathBuilder.pushLocalPath(stripExtensions(ontologyName));
                 final OwlSaxHandler handler = parseOntology(ont);
                 final View fullSchemaView = generateSchemaView(schemaViewTemplate, ontologyName, handler.getRoot(), pathBuilder, propertiesContext);
+                // path of View won't be right here because it was build in wrong context. See processRootView where hack solution is being implemented.
                 rootViews.add(fullSchemaView);
                 views.putAll(generateClassViews(handler.getClassCache(), pathBuilder, propertiesContext));
                 pathBuilder.popLocalPath();
@@ -94,7 +95,9 @@ public final class ViewBuilder {
 	private static String processRootViews(Set<View> rootViews, Map<String, View> allViews, 
 	        PathBuilder pathBuilder, VelocityContext propContext){
 	    for (View rootView : rootViews){
-	        allViews.put(pathBuilder.buildIncomingRequestPath(rootView.getPath()), rootView);
+	    	// need to fix the path of the view, this is a hack, will need to find better way...
+	    	View correctRootView = new View(rootView.getView(), rootView.getDescription(), pathBuilder.buildIncomingRequestPath(rootView.getPath()), rootView.getCleanName());
+	        allViews.put(correctRootView.getPath(), correctRootView);
 	    }
 	    return buildViewIndex(rootViews, pathBuilder, propContext);
 	}

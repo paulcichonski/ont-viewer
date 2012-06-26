@@ -6,6 +6,16 @@ package org.cichonski.ontviewer.servlet;
  */
 public interface PathBuilder {
 
+	/**
+	 * Will build a path for the classLabel assuming it needs to be used by a
+	 * page in a parent directory. Some implementations may just delegate to
+	 * buildPath() if they are building absolute paths for everything.
+	 * 
+	 * @param classLabel
+	 * @return
+	 */
+	 String buildPathFromParent(String classLabel);
+	
     /**
      * Will build the correct relative path to embed in HTML pages. This method
      * will include any localPaths pushed to the pushLocalPath() method.
