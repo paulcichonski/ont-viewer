@@ -166,7 +166,6 @@ public class OwlSaxHandlerTest extends TestCase {
     
     
     private void testClasses(OwlClass owlClass, OwlClass expectedClass, boolean testSubClasses){
-    	System.out.println("testing generated class: " + owlClass);
     	assertNotNull(owlClass);
     	assertNotNull(expectedClass);
     	assertEquals(owlClass, expectedClass); //only inspects URI

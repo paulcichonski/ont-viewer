@@ -66,7 +66,7 @@ public final class DynamicPathBuilder implements PathBuilder {
     }
     
     private void validateClassLabel(String classLabel){
-        if (classLabel.contains("/") && classLabel.contains("\\")){
+        if (classLabel.contains("/") || classLabel.contains("\\")){
             throw new IllegalStateException(classLabel + " contains slashes");
         }
     }
