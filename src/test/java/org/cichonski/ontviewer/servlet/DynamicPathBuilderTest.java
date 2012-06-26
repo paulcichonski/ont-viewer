@@ -133,6 +133,12 @@ public class DynamicPathBuilderTest extends TestCase {
     	}
     	assertNotNull(expectedException);
     	pathBuilder = new DynamicPathBuilder(SERVLET_PATH, ".html");
-    	
+    	String classLabel = "a good class";
+    	String classLabelNoSpaces = "agoodclass";
+    	assertEquals(pathBuilder.buildPath(classLabel), SERVLET_PATH + "/" +  classLabelNoSpaces + ".html");
+    	assertEquals(pathBuilder.buildIncomingRequestPath(classLabel), "/" +  classLabelNoSpaces + ".html");
+    	pathBuilder.pushLocalPath("local1");
+    	assertEquals(pathBuilder.buildPath(classLabel), SERVLET_PATH + "/local1/" +  classLabelNoSpaces + ".html");
+     	assertEquals(pathBuilder.buildIncomingRequestPath(classLabel), "/local1/" +  classLabelNoSpaces + ".html");
     }
 }
