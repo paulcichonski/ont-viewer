@@ -22,14 +22,23 @@ public final class DynamicPathBuilder implements PathBuilder {
     private String pathSansServletPath;
     
     /**
-     * 
+     * Build a pathBuilder with no fileExtension.
      * @param basePath - should be the base relative path (i.e., /[application-path]/[server-path]).
      */
     public DynamicPathBuilder(String basePath) {
         this(basePath, null);
     }
     
+    /**
+     * Constructor to use for defining any arbitrary file extension.
+     * @param basePath
+     * @param fileExtension - should be null if no fileExtension id desired.
+     * @throws IllegalStateException - if fileExtension is populated and does not start with a '.'.
+     */
     public DynamicPathBuilder(String basePath, String fileExtension) {
+    	if (fileExtension != null && !fileExtension.isEmpty() && !fileExtension.startsWith(".")){
+    		throw new IllegalStateException("fileExtension must start with '.'");
+    	}
         this.servletPath = basePath;
         this.fileExtension = fileExtension;
         reset();
