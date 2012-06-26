@@ -14,8 +14,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.cichonski.ontviewer.servlet.DynamicPathBuilder;
 import org.cichonski.ontviewer.servlet.PathBuilder;
+import org.cichonski.ontviewer.servlet.StaticPathBuilder;
 import org.cichonski.ontviewer.servlet.View;
 import org.cichonski.ontviewer.servlet.ViewBuilder;
 import org.cichonski.ontviewer.servlet.ViewBuilder.ViewContainer;
@@ -49,7 +49,7 @@ public class App {
             final Properties props = new Properties();
             props.load(new FileInputStream(getFile(PROPERTY_FILE_LOC)));
             String fileExtension = props.getProperty("file-extension");
-            final PathBuilder pathBuilder = new DynamicPathBuilder(contextPath, fileExtension);
+            final PathBuilder pathBuilder = new StaticPathBuilder(contextPath, fileExtension);
             ViewContainer viewContainer = ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder, props); 
             writeFile(new File(DEFAULT_STORAGE_LOCATION + "index.html"), viewContainer.getIndex());
             for (View view : viewContainer.getViews().values()){
