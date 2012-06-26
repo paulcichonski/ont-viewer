@@ -1,5 +1,7 @@
 package org.cichonski.ontviewer.servlet;
 
+import javax.activity.InvalidActivityException;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -122,6 +124,15 @@ public class DynamicPathBuilderTest extends TestCase {
     }
     
     public void testFileExtension(){
+    	DynamicPathBuilder pathBuilder = null;
+    	Exception expectedException = null;
+    	try {
+    		pathBuilder = new DynamicPathBuilder(SERVLET_PATH, "html");
+    	} catch (IllegalStateException e){
+    		expectedException = e;
+    	}
+    	assertNotNull(expectedException);
+    	pathBuilder = new DynamicPathBuilder(SERVLET_PATH, ".html");
     	
     }
 }
