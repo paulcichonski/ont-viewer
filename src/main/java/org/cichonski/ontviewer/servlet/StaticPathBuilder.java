@@ -99,6 +99,7 @@ public final class StaticPathBuilder implements PathBuilder {
         	builder.append("../");
         }
         if (currentPath != null && !currentPath.isEmpty()){
+            builder.deleteCharAt(builder.length()-1); //remove last '/' since currentPath will start with one.
         	builder.append(currentPath).append("/");
         }
         builder.append(StringUtils.deleteWhitespace(classLabel));

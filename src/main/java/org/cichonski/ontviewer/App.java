@@ -14,6 +14,13 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.cichonski.ontviewer.servlet.PathBuilder;
 import org.cichonski.ontviewer.servlet.StaticPathBuilder;
 import org.cichonski.ontviewer.servlet.View;
@@ -34,33 +41,83 @@ public class App {
     private static final Logger log = Logger.getLogger(App.class.getName());
     private static final String ONT_DIR_LOC = "ontologies/";
     private static final String PROPERTY_FILE_LOC ="ont-viewer.properties";
-    
-    // don't really do it this way, get this input as a args param.
     private static final String PATH_SEPERATOR = System.getProperty("file.separator");
-    private static final String DEFAULT_STORAGE_LOCATION = System.getProperty("user.home") + PATH_SEPERATOR + "ont-viewer-files" + PATH_SEPERATOR;
+
+    // below arguments need to either come from properties file, or command line
+    private static final String CONTEXT_PATH = "/vocabs";
+    
+    /* command line argument keys */
+    private static final String STORAGE_DIRECTORY_KEY = "storageDir";
     
     /**
-     * @param args
+     * @param args - 
      */
     public static void main(String[] args) {
-        // TODO Auto-generated method stub
         try {
-            String contextPath = "/vocabs";
+            final CommandLine cmd = parseArgs(args);
             final Properties props = new Properties();
+            String storageDirectory = readProperty(cmd, STORAGE_DIRECTORY_KEY, true);
             props.load(new FileInputStream(getFile(PROPERTY_FILE_LOC)));
             String fileExtension = props.getProperty("file-extension");
-            final PathBuilder pathBuilder = new StaticPathBuilder(contextPath, fileExtension);
-            ViewContainer viewContainer = ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder, props); 
-            writeFile(new File(DEFAULT_STORAGE_LOCATION + "index.html"), viewContainer.getIndex());
+            final PathBuilder pathBuilder = new StaticPathBuilder(CONTEXT_PATH, fileExtension);
+            final ViewContainer viewContainer = ViewBuilder.buildViews(getFile(ONT_DIR_LOC), pathBuilder, props); 
+            writeFile(new File(storageDirectory + CONTEXT_PATH.substring(1) + "/index.html"), viewContainer.getIndex());
             for (View view : viewContainer.getViews().values()){
-                writeFile(new File(DEFAULT_STORAGE_LOCATION
+                writeFile(new File(storageDirectory
                     + makePathOsAgnostic(view.getPath())), view.getView());
             }
         } catch (FileNotFoundException e){
+            log.info("exception writing html to file, cannot proceed");
             throw new RuntimeException(e);
         } catch (IOException e){
+            log.info("exception writing html to file, cannot proceed");
+            throw new RuntimeException(e);
+        } 
+    }
+    
+    /**
+     * 
+     * @param cmd
+     * @param name
+     * @param required - the required value specified in the Options object for the specific property.
+     * @return - the property value, this will return null if the property was not present and it was not required
+     * @throws RuntimeException - if the property was required, but the cmd returned null
+     */
+    private static String readProperty(CommandLine cmd, String name, boolean required){
+        if (required){
+            String value = cmd.getOptionValue(name);
+            if (value != null){
+                return value;
+            } else {
+                throw new RuntimeException(name + "was required, but not present");
+            }
+        } else {
+            if (cmd.hasOption(name)){
+                return cmd.getOptionValue(name);
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    private static CommandLine parseArgs(String[] args){
+        try {
+            final CommandLineParser parser = new GnuParser();
+            return parser.parse(buildOptions(), args);
+        }catch (ParseException e){
+            log.info("exception parsing command line arguments, cannot proceed");
             throw new RuntimeException(e);
         }
+    }
+    
+    @SuppressWarnings("static-access")
+    private static Options buildOptions(){
+        final Options options = new Options();
+        final Option storageDir =
+            OptionBuilder.isRequired().withArgName(STORAGE_DIRECTORY_KEY).hasArg().withDescription(
+                "storage diractory for putting webpages").create("storageDir");
+        options.addOption(storageDir);
+        return options;
     }
     
     private static void writeFile(File file, String html){
